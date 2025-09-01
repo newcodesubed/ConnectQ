@@ -49,4 +49,37 @@ export const UserModel = {
     );
     return result.rows[0] || null;
   },
+    async updateLastLogin(userId: string) {
+    await pool.query(`UPDATE users SET last_login=NOW() WHERE id=$1`, [userId]);
+  },
+
+  async setResetToken(userId: string, token: string, expiresAt: Date) {
+    await pool.query(
+      `UPDATE users SET reset_password_token=$1, reset_password_expires_at=$2 WHERE id=$3`,
+      [token, expiresAt, userId]
+    );
+  },
+
+  async findByResetToken(token: string): Promise<User | null> {
+    const result = await pool.query(
+      `SELECT * FROM users WHERE reset_password_token=$1 AND reset_password_expires_at > NOW()`,
+      [token]
+    );
+    return result.rows[0] || null;
+  },
+
+  async updatePassword(userId: string, newPassword: string) {
+    await pool.query(
+      `UPDATE users 
+       SET password=$1, reset_password_token=NULL, reset_password_expires_at=NULL 
+       WHERE id=$2`,
+      [newPassword, userId]
+    );
+  },
+
+  async findById(id: string): Promise<User | null> {
+    const result = await pool.query(`SELECT * FROM users WHERE id=$1`, [id]);
+    return result.rows[0] || null;
+  },
+
 };
