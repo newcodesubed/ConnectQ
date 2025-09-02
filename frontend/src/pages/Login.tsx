@@ -1,7 +1,7 @@
 import { useState,type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import { useAuthStore } from "../store/auth.store";
 
@@ -10,11 +10,14 @@ function LoginPage() {
   const [password, setPassword] = useState<string>("");
 
   const { login, error, loading } = useAuthStore();
+    const navigate = useNavigate();
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     try {
       await login(email, password);
+      // Redirect or perform any other action after successful login
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
     }

@@ -71,8 +71,8 @@ function EmailVerificationPage() {
       <div className="px-8 py-4 bg-gray-900 bg-opacity-50 flex justify-center">
         <p className="text-sm text-gray-400">
           Didn&apos;t receive the code?{" "}
-          <Link to="/resend-verification" className="text-green-400 hover:underline">
-            Resend
+          <Link to="/signup" className="text-green-400 hover:underline">
+            signup
           </Link>
         </p>
       </div>
