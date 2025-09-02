@@ -1,19 +1,21 @@
-import type { InputHTMLAttributes } from "react";
+import type { ComponentType, InputHTMLAttributes } from "react";
 
-type Props = InputHTMLAttributes<HTMLInputElement> & {
-  label: string;
-  error?: string;
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  icon: ComponentType<React.SVGProps<SVGSVGElement>>;
+}
+
+const Input = ({ icon: Icon, ...props }: InputProps) => {
+  return (
+    <div className="relative mb-6">
+      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+        <Icon className="size-5 text-green-500" />
+      </div>
+      <input
+        {...props}
+        className="w-full pl-10 pr-3 py-2 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400 transition duration-200"
+      />
+    </div>
+  );
 };
 
-export default function Input({ label, error, ...props }: Props) {
-  return (
-    <label className="block w-full mb-3">
-      <span className="block text-sm font-medium mb-1">{label}</span>
-      <input
-        className="w-full rounded-xl border px-3 py-2 outline-none focus:ring focus:ring-blue-200"
-        {...props}
-      />
-      {error && <span className="text-xs text-red-600">{error}</span>}
-    </label>
-  );
-}
+export default Input;

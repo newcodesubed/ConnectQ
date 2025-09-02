@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useAuth } from "../store/auth.store";
+import { useAuthStore } from "../store/auth.store";
 
 export default function Dashboard() {
-  const { user, checkAuth } = useAuth();
+  const { user, checkAuth } = useAuthStore();
 
   useEffect(() => {
     // refresh on mount (optional, also can be done in App)
