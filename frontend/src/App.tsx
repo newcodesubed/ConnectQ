@@ -21,7 +21,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user && !user.is_verified) {
+  if (user && !user.isVerified) {
     return <Navigate to="/verify-email" replace />;
   }
 
@@ -36,7 +36,7 @@ interface RedirectAuthenticatedProps {
 const RedirectAuthenticated: React.FC<RedirectAuthenticatedProps> = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
 
-  return isAuthenticated && user?.is_verified ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+  return isAuthenticated && user?.isVerified ? <Navigate to="/dashboard" replace /> : <>{children}</>;
 };
 
 

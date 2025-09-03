@@ -14,9 +14,9 @@ export default function Dashboard() {
   
 
   return (
-    <div className="p-6 flex ">
+    <div className="p-6 flex min-h-screen">
       <Toaster position="top-right" />
-      <div className="flex mb-6">
+      <div className="flex min-h-screen mb-6">
       <div className="flex ">
         <img src="/logo.webp
         " alt="Logo" className="h-10 w-10" />
@@ -26,7 +26,7 @@ export default function Dashboard() {
       <h1 className="text-2xl font-bold">Dashboard</h1>
       
       </div>
-      <div>
+      <div >
 
       <button
         onClick={handleLogout}

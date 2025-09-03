@@ -11,8 +11,8 @@ export interface User {
   email: string;
   name: string;
   role: Role;
-  is_verified: boolean;
-  created_at: string;
+  isVerified: boolean;
+  createdAt: string;
 }
 
 interface AuthState {
@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data } = await axios.get(`${API_URL}/check-auth`);
       if (data.user) {
-        set({ user: data.user, isAuthenticated: true });
+        set({ user: data.user, isAuthenticated: true});
       } else {
         set({ user: null, isAuthenticated: false });
       }
@@ -124,7 +124,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const { data } = await axios.post(`${API_URL}/verify-email`, { code });
-      if (data.user) set({ user: data.user, isAuthenticated: true });
+      if (data.user) set({ user: data.user, isAuthenticated: true, loading: false });
       return data;
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;

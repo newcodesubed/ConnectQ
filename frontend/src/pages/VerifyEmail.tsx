@@ -14,11 +14,14 @@ function EmailVerificationPage() {
   const handleVerify = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await verifyEmail(code);
-      navigate("/dashboard"); // redirect after successful verification
-    } catch (err) {
-      console.error(err);
+     await verifyEmail(code);
+    if (!error) {
+      console.log("Email verified successfully");
+      navigate("/dashboard");
     }
+  } catch (err) {
+    console.error(err);
+  }
   };
 
   return (
