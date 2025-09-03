@@ -1,85 +1,93 @@
-import { pool } from "../db";
-
-export interface User {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-  role: "client" | "company";
-  is_verified: boolean;
-  last_login: Date;
-  reset_password_token?: string | null;
-  reset_password_expires_at?: Date | null;
-  verification_token?: string | null;
-  verification_expires_at?: Date | null;
-  created_at: Date;
-  updated_at: Date;
-}
+import { db } from '../db';
+import { users } from '../db/schema';
+import { eq, and, gt } from 'drizzle-orm';
 
 export const UserModel = {
-  async findByEmail(email: string): Promise<User | null> {
-    const result = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
-    return result.rows[0] || null;
+  async findByEmail(email: string) {
+    const result = await db.select().from(users).where(eq(users.email, email));
+    return result[0] || null;
   },
 
-  async create(user: Partial<User>): Promise<User> {
-    const result = await pool.query(
-      `INSERT INTO users (email, password, name, role, verification_token, verification_expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [
-        user.email,
-        user.password,
-        user.name,
-        user.role,
-        user.verification_token,
-        user.verification_expires_at,
-      ]
-    );
-    return result.rows[0];
+  async create(userData: {
+    email: string;
+    password: string;
+    name: string;
+    role: 'client' | 'company';
+    verificationToken?: string;
+    verificationExpiresAt?: Date;
+  }) {
+    const result = await db.insert(users).values({
+      email: userData.email,
+      password: userData.password,
+      name: userData.name,
+      role: userData.role,
+      verificationToken: userData.verificationToken,
+      verificationExpiresAt: userData.verificationExpiresAt,
+    }).returning();
+    return result[0];
   },
 
-  async verifyUser(token: string): Promise<User | null> {
-    const result = await pool.query(
-      `UPDATE users
-       SET is_verified=true, verification_token=NULL, verification_expires_at=NULL
-       WHERE verification_token=$1 AND verification_expires_at > NOW()
-       RETURNING *`,
-      [token]
-    );
-    return result.rows[0] || null;
+  async verifyUser(token: string) {
+    const result = await db
+      .update(users)
+      .set({
+        isVerified: true,
+        verificationToken: null,
+        verificationExpiresAt: null,
+      })
+      .where(
+        and(
+          eq(users.verificationToken, token),
+          gt(users.verificationExpiresAt, new Date())
+        )
+      )
+      .returning();
+    return result[0] || null;
   },
-    async updateLastLogin(userId: string) {
-    await pool.query(`UPDATE users SET last_login=NOW() WHERE id=$1`, [userId]);
+
+  async updateLastLogin(userId: string) {
+    await db
+      .update(users)
+      .set({ lastLogin: new Date() })
+      .where(eq(users.id, userId));
   },
 
   async setResetToken(userId: string, token: string, expiresAt: Date) {
-    await pool.query(
-      `UPDATE users SET reset_password_token=$1, reset_password_expires_at=$2 WHERE id=$3`,
-      [token, expiresAt, userId]
-    );
+    await db
+      .update(users)
+      .set({
+        resetPasswordToken: token,
+        resetPasswordExpiresAt: expiresAt,
+      })
+      .where(eq(users.id, userId));
   },
 
-  async findByResetToken(token: string): Promise<User | null> {
-    const result = await pool.query(
-      `SELECT * FROM users WHERE reset_password_token=$1 AND reset_password_expires_at > NOW()`,
-      [token]
-    );
-    return result.rows[0] || null;
+  async findByResetToken(token: string) {
+    const result = await db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.resetPasswordToken, token),
+          gt(users.resetPasswordExpiresAt, new Date())
+        )
+      );
+    return result[0] || null;
   },
 
   async updatePassword(userId: string, newPassword: string) {
-    await pool.query(
-      `UPDATE users 
-       SET password=$1, reset_password_token=NULL, reset_password_expires_at=NULL 
-       WHERE id=$2`,
-      [newPassword, userId]
-    );
+    await db
+      .update(users)
+      .set({
+        password: newPassword,
+        resetPasswordToken: null,
+        resetPasswordExpiresAt: null,
+      })
+      .where(eq(users.id, userId));
   },
 
-  async findById(id: string): Promise<User | null> {
-    const result = await pool.query(`SELECT * FROM users WHERE id=$1`, [id]);
-    return result.rows[0] || null;
+  async findById(id: string) {
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0] || null;
   },
-
 };

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes";
-import { pool } from "./db";
+import { db } from "./db";
 
 dotenv.config();
 
@@ -18,6 +18,13 @@ app.get("/", (_, res) => res.send("Server is running"));
 app.use("/api/auth", authRoutes);
 
 app.listen(PORT, async () => {
-  await pool.connect();
+  try {
+    // Test database connection
+    await db.execute("SELECT 1");
+    console.log("Database connected successfully");
+  } catch (error) {
+    console.error("Database connection failed:", error);
+    process.exit(1);
+  }
   console.log(`Server running on port ${PORT}`);
 });
