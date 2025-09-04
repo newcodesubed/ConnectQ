@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes";
+import companyRoutes from "./routes/compnies.route";
 import { db } from "./db";
 
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(cookieParser());
 
 app.get("/", (_, res) => res.send("Server is running"));
 app.use("/api/auth", authRoutes);
+app.use("/api/companies", companyRoutes);
 
 app.listen(PORT, async () => {
   try {

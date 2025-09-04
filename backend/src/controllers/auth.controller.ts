@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
-import { UserModel } from "../models/user.model";
+import { UserRepository } from "../repository/user.repository";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie";
 import { sendPasswordResetEmail, sendResetSuccessEmail, sendVerificationEmail, sendWelcomeEmail } from "../utils/email";
 import crypto from "crypto";
@@ -15,7 +15,7 @@ export const signup = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: "All fields required" });
     }
 
-    const existingUser = await UserModel.findByEmail(email);
+    const existingUser = await UserRepository.findByEmail(email);
     if (existingUser) {
       return res.status(400).json({ success: false, message: "User already exists" });
     }
@@ -23,7 +23,7 @@ export const signup = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const user = await UserModel.create({
+    const user = await UserRepository.create({
       email,
       password: hashedPassword,
       name,
@@ -48,7 +48,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
   const { code } = req.body;
 
   try {
-    const user = await UserModel.verifyUser(code);
+    const user = await UserRepository.verifyUser(code);
 
     if (!user) {
       return res.status(400).json({ success: false, message: "Invalid or expired code" });
@@ -73,7 +73,7 @@ export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    const user = await UserModel.findByEmail(email);
+    const user = await UserRepository.findByEmail(email);
 
     if (!user) {
       return res.status(400).json({ success: false, message: "Invalid email" });
@@ -90,7 +90,7 @@ export const login = async (req: Request, res: Response) => {
     generateTokenAndSetCookie(res, user.id);
 
     // update last login
-    await UserModel.updateLastLogin(user.id);
+    await UserRepository.updateLastLogin(user.id);
 
     logger.info(`User logged in: ${user.email}`);
 
@@ -113,7 +113,7 @@ export const forgetPassword = async (req: Request, res: Response) => {
   const { email } = req.body;
 
   try {
-    const user = await UserModel.findByEmail(email);
+    const user = await UserRepository.findByEmail(email);
 
     if (!user) {
       return res.status(400).json({ success: false, message: "User not found" });
@@ -122,7 +122,7 @@ export const forgetPassword = async (req: Request, res: Response) => {
     const resetToken = crypto.randomBytes(20).toString("hex");
     const resetTokenExpiration = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    await UserModel.setResetToken(user.id, resetToken, resetTokenExpiration);
+    await UserRepository.setResetToken(user.id, resetToken, resetTokenExpiration);
 
     await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
 
@@ -139,7 +139,7 @@ export const resetPassword = async (req: Request, res: Response) => {
   const { password } = req.body;
 
   try {
-    const user = await UserModel.findByResetToken(token);
+    const user = await UserRepository.findByResetToken(token);
 
     if (!user) {
       return res.status(400).json({ success: false, message: "Invalid or expired reset token" });
@@ -147,7 +147,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await UserModel.updatePassword(user.id, hashedPassword);
+    await UserRepository.updatePassword(user.id, hashedPassword);
 
     await sendResetSuccessEmail(user.email);
 
@@ -161,7 +161,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 export const checkAuth = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
-    const user = await UserModel.findById(userId);
+    const user = await UserRepository.findById(userId);
 
     logger.info(`Auth check for user ID: ${userId}`);
 

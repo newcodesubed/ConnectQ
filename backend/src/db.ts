@@ -1,9 +1,10 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from '../src/db/schema';
+import * as userSchema from './model/user.model';
+import * as companiesSchema from './model/companies.model';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const client = postgres(process.env.DATABASE_URL!);
-export const db = drizzle(client, { schema });
+const client = postgres(process.env.DATABASE_URL!, { max: 1 });
+export const db = drizzle(client, { schema: { ...userSchema, ...companiesSchema } });

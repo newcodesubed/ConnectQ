@@ -1,8 +1,8 @@
 import { db } from '../db';
-import { users } from '../db/schema';
+import { users } from '../model/user.model';
 import { eq, and, gt } from 'drizzle-orm';
 
-export const UserModel = {
+export const UserRepository = {
   async findByEmail(email: string) {
     const result = await db.select().from(users).where(eq(users.email, email));
     return result[0] || null;
