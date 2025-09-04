@@ -8,6 +8,13 @@
       "when": 1756901269633,
       "tag": "0000_mute_ironclad",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1756982075929,
+      "tag": "0001_fat_nick_fury",
+      "breakpoints": true
     }
   ]
 }

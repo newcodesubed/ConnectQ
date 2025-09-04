@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes";
-import companyRoutes from "./routes/compnies.route";
+import companyRoutes from "./routes/compnies.routes";
 import { db } from "./db";
 
 dotenv.config();

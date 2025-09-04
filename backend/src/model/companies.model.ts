@@ -15,7 +15,6 @@ export const companies = pgTable('companies', {
   industry: text('industry'),
   location: text('location'),
   contactNumber: text('contact_number'),
-  imgPath: text('img_path'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
 });
 
