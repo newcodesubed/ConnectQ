@@ -14,16 +14,16 @@ export default function Dashboard() {
   
 
   return (
-    <div className="p-6 flex min-h-screen">
+    <div className="flex mx-auto w-full min-h-screen">
       <Toaster position="top-right" />
-      <div className="flex min-h-screen mb-6">
-      <div className="flex ">
+      <div className="flex w-full mb-6">
+      <div className="flex align-items-center w-full mb-6">
         <img src="/logo.webp
         " alt="Logo" className="h-10 w-10" />
-        <p className="mt-2">Welcome, {user?.name}</p>
-      <p className="text-sm text-gray-500">Role: {user?.role}</p>
+        <p className="mt-2 text-stone-200">Welcome, {user?.name}</p>
+        <p className="text-sm text-gray-500">Role: {user?.role}</p>
       </div>
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl text-stone-200 font-bold">Dashboard</h1>
       
       </div>
       <div >

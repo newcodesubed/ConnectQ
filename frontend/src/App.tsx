@@ -55,7 +55,8 @@ const App: React.FC = () => {
                  from-gray-900 via-green-900 to-emerald-900
                  flex items-center justify-center relative overflow-hidden"
     >
-      
+      <div className="container mx-auto px-8">
+
       <Routes>
         <Route path="/" element={<Navigate to="/role" replace />} />
        <Route path="/role" element={<RoleSelect />} />
@@ -74,7 +75,7 @@ const App: React.FC = () => {
               <LoginPage />
             </RedirectAuthenticated>
           }
-        />
+          />
         <Route
           path="/signup"
           element={
@@ -82,7 +83,7 @@ const App: React.FC = () => {
               <SignUpPage />
             </RedirectAuthenticated>
           }
-        />
+          />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route
           path="/forgot-password"
@@ -91,7 +92,7 @@ const App: React.FC = () => {
               <ForgotPasswordPage />
             </RedirectAuthenticated>
           }
-        />
+          />
         <Route
           path="/reset-password/:token"
           element={
@@ -99,10 +100,11 @@ const App: React.FC = () => {
               <ResetPasswordPage />
             </RedirectAuthenticated>
           }
-        />
+          />
       </Routes>
 
       <Toaster />
+          </div>
     </div>
   );
 };
