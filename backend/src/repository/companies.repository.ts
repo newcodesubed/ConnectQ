@@ -22,6 +22,24 @@ export const CompanyRepository = {
     industry?: string;
     location?: string;
     contactNumber?: string;
+    // Branding
+    logoUrl?: string;
+    website?: string;
+    tagline?: string;
+    foundedAt?: Date;
+    // Offerings
+    services?: string[];
+    technologiesUsed?: string[];
+    costRange?: string;
+    deliveryDuration?: string;
+    specializations?: string[];
+    // Scale
+    employeeCount?: number;
+    // Reputation
+    reviews?: string[];
+    // Social Links
+    linkedinUrl?: string;
+    twitterUrl?: string;
   }) {
     const result = await db.insert(companies).values(companyData).returning();
     return result[0];
@@ -34,6 +52,24 @@ export const CompanyRepository = {
     industry?: string;
     location?: string;
     contactNumber?: string;
+    // Branding
+    logoUrl?: string;
+    website?: string;
+    tagline?: string;
+    foundedAt?: Date;
+    // Offerings
+    services?: string[];
+    technologiesUsed?: string[];
+    costRange?: string;
+    deliveryDuration?: string;
+    specializations?: string[];
+    // Scale
+    employeeCount?: number;
+    // Reputation
+    reviews?: string[];
+    // Social Links
+    linkedinUrl?: string;
+    twitterUrl?: string;
   }>) {
     const result = await db
       .update(companies)

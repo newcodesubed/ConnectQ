@@ -4,7 +4,32 @@ import logger from "../utils/logger";
 
 export const createCompany = async (req: Request, res: Response) => {
   try {
-    const { name, email, description, industry, location, contactNumber } = req.body;
+    const { 
+      name, 
+      email, 
+      description, 
+      industry, 
+      location, 
+      contactNumber,
+      // Branding
+      logoUrl,
+      website,
+      tagline,
+      foundedAt,
+      // Offerings
+      services,
+      technologiesUsed,
+      costRange,
+      deliveryDuration,
+      specializations,
+      // Scale
+      employeeCount,
+      // Reputation
+      reviews,
+      // Social Links
+      linkedinUrl,
+      twitterUrl
+    } = req.body;
     const userId = (req as any).userId; // From auth middleware
 
     // Role check is now done in middleware, so we can skip it here
@@ -27,16 +52,36 @@ export const createCompany = async (req: Request, res: Response) => {
       });
     }
 
-    // Create company
-    const companyData = {
+    // Create company data object
+    const companyData: any = {
       userId,
       name,
       email,
       description,
       industry,
       location,
-      contactNumber
+      contactNumber,
+      logoUrl,
+      website,
+      tagline,
+      foundedAt: foundedAt ? new Date(foundedAt) : undefined,
+      services,
+      technologiesUsed,
+      costRange,
+      deliveryDuration,
+      specializations,
+      employeeCount,
+      reviews,
+      linkedinUrl,
+      twitterUrl
     };
+
+    // Remove undefined fields to avoid inserting null values
+    Object.keys(companyData).forEach(key => {
+      if (companyData[key] === undefined) {
+        delete companyData[key];
+      }
+    });
 
     const newCompany = await CompanyRepository.create(companyData);
 
@@ -95,7 +140,32 @@ export const updateCompany = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const userId = (req as any).userId;
-    const { name, email, description, industry, location, contactNumber } = req.body;
+    const { 
+      name, 
+      email, 
+      description, 
+      industry, 
+      location, 
+      contactNumber,
+      // Branding
+      logoUrl,
+      website,
+      tagline,
+      foundedAt,
+      // Offerings
+      services,
+      technologiesUsed,
+      costRange,
+      deliveryDuration,
+      specializations,
+      // Scale
+      employeeCount,
+      // Reputation
+      reviews,
+      // Social Links
+      linkedinUrl,
+      twitterUrl
+    } = req.body;
 
     // Check if company exists and user owns it
     const existingCompany = await CompanyRepository.findById(id);
@@ -122,6 +192,24 @@ export const updateCompany = async (req: Request, res: Response) => {
     if (industry !== undefined) updateData.industry = industry;
     if (location !== undefined) updateData.location = location;
     if (contactNumber !== undefined) updateData.contactNumber = contactNumber;
+    // Branding
+    if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
+    if (website !== undefined) updateData.website = website;
+    if (tagline !== undefined) updateData.tagline = tagline;
+    if (foundedAt !== undefined) updateData.foundedAt = foundedAt ? new Date(foundedAt) : null;
+    // Offerings
+    if (services !== undefined) updateData.services = services;
+    if (technologiesUsed !== undefined) updateData.technologiesUsed = technologiesUsed;
+    if (costRange !== undefined) updateData.costRange = costRange;
+    if (deliveryDuration !== undefined) updateData.deliveryDuration = deliveryDuration;
+    if (specializations !== undefined) updateData.specializations = specializations;
+    // Scale
+    if (employeeCount !== undefined) updateData.employeeCount = employeeCount;
+    // Reputation
+    if (reviews !== undefined) updateData.reviews = reviews;
+    // Social Links
+    if (linkedinUrl !== undefined) updateData.linkedinUrl = linkedinUrl;
+    if (twitterUrl !== undefined) updateData.twitterUrl = twitterUrl;
 
     const updatedCompany = await CompanyRepository.update(id, updateData);
 
