@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { CompanyRepository } from "../repository/companies.repository";
+import { uploadImage, deleteImage } from "../utils/cloudinary";
+import { cleanupTempFile } from "../utils/upload";
 import logger from "../utils/logger";
 
 export const createCompany = async (req: Request, res: Response) => {
@@ -11,8 +13,7 @@ export const createCompany = async (req: Request, res: Response) => {
       industry, 
       location, 
       contactNumber,
-      // Branding
-      logoUrl,
+      // Branding (logoUrl will be handled separately through file upload)
       website,
       tagline,
       foundedAt,
@@ -32,9 +33,6 @@ export const createCompany = async (req: Request, res: Response) => {
     } = req.body;
     const userId = (req as any).userId; // From auth middleware
 
-    // Role check is now done in middleware, so we can skip it here
-    // The user data is also available in req.user if needed
-
     // Validate required fields
     if (!name || !email) {
       return res.status(400).json({ 
@@ -52,6 +50,28 @@ export const createCompany = async (req: Request, res: Response) => {
       });
     }
 
+    // Handle logo upload if file is present
+    let logoUrl = null;
+    if (req.file) {
+      const uploadResult = await uploadImage(req.file.path, 'companies/logos');
+      if (uploadResult) {
+        logoUrl = uploadResult.url;
+      } else {
+        // Clean up temp file if upload failed
+        cleanupTempFile(req.file.path);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload logo image"
+        });
+      }
+    }
+
+    // Parse array fields if they come as strings
+    const parsedServices = typeof services === 'string' ? JSON.parse(services) : services;
+    const parsedTechnologiesUsed = typeof technologiesUsed === 'string' ? JSON.parse(technologiesUsed) : technologiesUsed;
+    const parsedSpecializations = typeof specializations === 'string' ? JSON.parse(specializations) : specializations;
+    const parsedReviews = typeof reviews === 'string' ? JSON.parse(reviews) : reviews;
+
     // Create company data object
     const companyData: any = {
       userId,
@@ -65,13 +85,13 @@ export const createCompany = async (req: Request, res: Response) => {
       website,
       tagline,
       foundedAt: foundedAt ? new Date(foundedAt) : undefined,
-      services,
-      technologiesUsed,
+      services: parsedServices,
+      technologiesUsed: parsedTechnologiesUsed,
       costRange,
       deliveryDuration,
-      specializations,
-      employeeCount,
-      reviews,
+      specializations: parsedSpecializations,
+      employeeCount: employeeCount ? parseInt(employeeCount) : undefined,
+      reviews: parsedReviews,
       linkedinUrl,
       twitterUrl
     };
@@ -93,6 +113,10 @@ export const createCompany = async (req: Request, res: Response) => {
       company: newCompany
     });
   } catch (error: any) {
+    // Clean up temp file if it exists
+    if (req.file) {
+      cleanupTempFile(req.file.path);
+    }
     logger.error("Error creating company:", error);
     res.status(500).json({ 
       success: false, 
@@ -147,8 +171,7 @@ export const updateCompany = async (req: Request, res: Response) => {
       industry, 
       location, 
       contactNumber,
-      // Branding
-      logoUrl,
+      // Branding (logoUrl will be handled separately through file upload)
       website,
       tagline,
       foundedAt,
@@ -171,6 +194,10 @@ export const updateCompany = async (req: Request, res: Response) => {
     const existingCompany = await CompanyRepository.findById(id);
     
     if (!existingCompany) {
+      // Clean up temp file if upload was attempted
+      if (req.file) {
+        cleanupTempFile(req.file.path);
+      }
       return res.status(404).json({
         success: false,
         message: "Company not found"
@@ -178,11 +205,45 @@ export const updateCompany = async (req: Request, res: Response) => {
     }
 
     if (existingCompany.userId !== userId) {
+      // Clean up temp file if upload was attempted
+      if (req.file) {
+        cleanupTempFile(req.file.path);
+      }
       return res.status(403).json({
         success: false,
         message: "Access denied. You can only update your own company."
       });
     }
+
+    // Handle logo upload if file is present
+    let logoUrl = existingCompany.logoUrl; // Keep existing logo by default
+    if (req.file) {
+      const uploadResult = await uploadImage(req.file.path, 'companies/logos');
+      if (uploadResult) {
+        logoUrl = uploadResult.url;
+        
+        // Delete old logo from Cloudinary if it exists
+        if (existingCompany.logoUrl) {
+          // Extract public_id from the URL and delete
+          const urlParts = existingCompany.logoUrl.split('/');
+          const publicIdWithExtension = urlParts.slice(-2).join('/'); // folder/filename
+          const publicId = publicIdWithExtension.split('.')[0]; // remove extension
+          await deleteImage(publicId);
+        }
+      } else {
+        cleanupTempFile(req.file.path);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload logo image"
+        });
+      }
+    }
+
+    // Parse array fields if they come as strings
+    const parsedServices = typeof services === 'string' ? JSON.parse(services) : services;
+    const parsedTechnologiesUsed = typeof technologiesUsed === 'string' ? JSON.parse(technologiesUsed) : technologiesUsed;
+    const parsedSpecializations = typeof specializations === 'string' ? JSON.parse(specializations) : specializations;
+    const parsedReviews = typeof reviews === 'string' ? JSON.parse(reviews) : reviews;
 
     // Prepare update data (only include provided fields)
     const updateData: any = {};
@@ -193,20 +254,20 @@ export const updateCompany = async (req: Request, res: Response) => {
     if (location !== undefined) updateData.location = location;
     if (contactNumber !== undefined) updateData.contactNumber = contactNumber;
     // Branding
-    if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
+    if (req.file || logoUrl !== existingCompany.logoUrl) updateData.logoUrl = logoUrl;
     if (website !== undefined) updateData.website = website;
     if (tagline !== undefined) updateData.tagline = tagline;
     if (foundedAt !== undefined) updateData.foundedAt = foundedAt ? new Date(foundedAt) : null;
     // Offerings
-    if (services !== undefined) updateData.services = services;
-    if (technologiesUsed !== undefined) updateData.technologiesUsed = technologiesUsed;
+    if (services !== undefined) updateData.services = parsedServices;
+    if (technologiesUsed !== undefined) updateData.technologiesUsed = parsedTechnologiesUsed;
     if (costRange !== undefined) updateData.costRange = costRange;
     if (deliveryDuration !== undefined) updateData.deliveryDuration = deliveryDuration;
-    if (specializations !== undefined) updateData.specializations = specializations;
+    if (specializations !== undefined) updateData.specializations = parsedSpecializations;
     // Scale
-    if (employeeCount !== undefined) updateData.employeeCount = employeeCount;
+    if (employeeCount !== undefined) updateData.employeeCount = employeeCount ? parseInt(employeeCount) : null;
     // Reputation
-    if (reviews !== undefined) updateData.reviews = reviews;
+    if (reviews !== undefined) updateData.reviews = parsedReviews;
     // Social Links
     if (linkedinUrl !== undefined) updateData.linkedinUrl = linkedinUrl;
     if (twitterUrl !== undefined) updateData.twitterUrl = twitterUrl;
@@ -228,6 +289,10 @@ export const updateCompany = async (req: Request, res: Response) => {
       company: updatedCompany
     });
   } catch (error: any) {
+    // Clean up temp file if it exists
+    if (req.file) {
+      cleanupTempFile(req.file.path);
+    }
     logger.error("Error updating company:", error);
     res.status(500).json({
       success: false,

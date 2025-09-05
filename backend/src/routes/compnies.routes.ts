@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { createCompany, getCompany, updateCompany, getMyCompany } from "../controllers/companies.controller";
 import { verifyToken } from "../middlewares/verifyToken";
+import { uploadCompanyLogo } from "../utils/upload";
 import { UserRepository } from "../repository/user.repository";
 
 const router = Router();
@@ -46,8 +47,30 @@ const requireCompanyRole = async (req: any, res: any, next: any) => {
   }
 };
 
-// POST /companies - Create new company (requires company role)
-router.post("/", verifyToken, requireCompanyRole, createCompany);
+// Error handling middleware for multer
+const handleMulterError = (error: any, req: any, res: any, next: any) => {
+  if (error instanceof Error) {
+    if (error.message.includes('Only image files')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+    if (error.message.includes('File too large')) {
+      return res.status(400).json({
+        success: false,
+        message: "File size too large. Maximum size is 5MB."
+      });
+    }
+  }
+  return res.status(500).json({
+    success: false,
+    message: "File upload error"
+  });
+};
+
+// POST /companies - Create new company (requires company role, supports file upload)
+router.post("/", verifyToken, requireCompanyRole, uploadCompanyLogo, handleMulterError, createCompany);
 
 // GET /companies/me - Get current user's company (requires company role)
 router.get("/me", verifyToken, requireCompanyRole, getMyCompany);
@@ -55,7 +78,7 @@ router.get("/me", verifyToken, requireCompanyRole, getMyCompany);
 // GET /companies/:id - Get specific company (requires company role)
 router.get("/:id", verifyToken, requireCompanyRole, getCompany);
 
-// PUT /companies/:id - Update company (requires company role)
-router.put("/:id", verifyToken, requireCompanyRole, updateCompany);
+// PUT /companies/:id - Update company (requires company role, supports file upload)
+router.put("/:id", verifyToken, requireCompanyRole, uploadCompanyLogo, handleMulterError, updateCompany);
 
 export default router;
