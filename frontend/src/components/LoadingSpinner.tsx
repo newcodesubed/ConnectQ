@@ -11,7 +11,7 @@ const LoadingSpinner: FC = () => {
         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
       /> */}
       <motion.img
-      src="/logo.png"
+      src="/logo.webp"
       alt="Loading..."
       className="w-16 h-16 rounded-full"
       animate={{ scale: [1, 1.2, 1] }}
