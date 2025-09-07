@@ -1,6 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Building, Mail, MapPin, Phone, Briefcase, FileText, Edit, Calendar, X } from "lucide-react";
+import { 
+  Building, 
+  Mail, 
+  MapPin, 
+  Phone, 
+  Briefcase, 
+  FileText, 
+  Edit, 
+  Calendar, 
+  X,
+  Upload,
+  Globe,
+  Quote,
+  Users,
+  DollarSign,
+  Clock,
+  Linkedin,
+  Twitter,
+  ExternalLink
+} from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useCompanyStore, type UpdateCompanyData } from "../store/companies.store";
@@ -15,8 +34,28 @@ function CompanyDashboard() {
     description: "",
     industry: "",
     location: "",
-    contactNumber: ""
+    contactNumber: "",
+    // Branding
+    logo: null as File | null,
+    website: "",
+    tagline: "",
+    foundedAt: "",
+    // Offerings
+    services: [] as string[],
+    technologiesUsed: [] as string[],
+    costRange: "",
+    deliveryDuration: "",
+    specializations: [] as string[],
+    // Scale
+    employeeCount: "",
+    // Social Links
+    linkedinUrl: "",
+    twitterUrl: ""
   });
+
+  const [servicesInput, setServicesInput] = useState("");
+  const [technologiesInput, setTechnologiesInput] = useState("");
+  const [specializationsInput, setSpecializationsInput] = useState("");
 
   const { company, loading, error, getMyCompany, updateCompany } = useCompanyStore();
   const navigate = useNavigate();
@@ -33,7 +72,23 @@ function CompanyDashboard() {
         description: company.description || "",
         industry: company.industry || "",
         location: company.location || "",
-        contactNumber: company.contactNumber || ""
+        contactNumber: company.contactNumber || "",
+        // Branding
+        logo: null,
+        website: company.website || "",
+        tagline: company.tagline || "",
+        foundedAt: company.foundedAt ? company.foundedAt.split('T')[0] : "",
+        // Offerings
+        services: company.services || [],
+        technologiesUsed: company.technologiesUsed || [],
+        costRange: company.costRange || "",
+        deliveryDuration: company.deliveryDuration || "",
+        specializations: company.specializations || [],
+        // Scale
+        employeeCount: company.employeeCount?.toString() || "",
+        // Social Links
+        linkedinUrl: company.linkedinUrl || "",
+        twitterUrl: company.twitterUrl || ""
       });
     }
   }, [company]);
@@ -46,19 +101,75 @@ function CompanyDashboard() {
     }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setEditFormData(prev => ({
+      ...prev,
+      logo: file
+    }));
+  };
+
+  const addToArray = (arrayName: 'services' | 'technologiesUsed' | 'specializations', input: string, setInput: (value: string) => void) => {
+    if (input.trim()) {
+      setEditFormData(prev => ({
+        ...prev,
+        [arrayName]: [...prev[arrayName], input.trim()]
+      }));
+      setInput("");
+    }
+  };
+
+  const removeFromArray = (arrayName: 'services' | 'technologiesUsed' | 'specializations', index: number) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [arrayName]: prev[arrayName].filter((_, i) => i !== index)
+    }));
+  };
+
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!company) return;
 
     try {
-      // Only send fields that have changed
+      // Create update data with only changed fields
       const updateData: UpdateCompanyData = {};
+      
+      // Basic fields
       if (editFormData.name !== company.name) updateData.name = editFormData.name;
       if (editFormData.email !== company.email) updateData.email = editFormData.email;
       if (editFormData.description !== company.description) updateData.description = editFormData.description;
       if (editFormData.industry !== company.industry) updateData.industry = editFormData.industry;
       if (editFormData.location !== company.location) updateData.location = editFormData.location;
       if (editFormData.contactNumber !== company.contactNumber) updateData.contactNumber = editFormData.contactNumber;
+      
+      // Branding
+      if (editFormData.logo) updateData.logo = editFormData.logo;
+      if (editFormData.website !== company.website) updateData.website = editFormData.website;
+      if (editFormData.tagline !== company.tagline) updateData.tagline = editFormData.tagline;
+      if (editFormData.foundedAt !== (company.foundedAt ? company.foundedAt.split('T')[0] : "")) {
+        updateData.foundedAt = editFormData.foundedAt;
+      }
+      
+      // Offerings
+      if (JSON.stringify(editFormData.services) !== JSON.stringify(company.services || [])) {
+        updateData.services = editFormData.services;
+      }
+      if (JSON.stringify(editFormData.technologiesUsed) !== JSON.stringify(company.technologiesUsed || [])) {
+        updateData.technologiesUsed = editFormData.technologiesUsed;
+      }
+      if (editFormData.costRange !== company.costRange) updateData.costRange = editFormData.costRange;
+      if (editFormData.deliveryDuration !== company.deliveryDuration) updateData.deliveryDuration = editFormData.deliveryDuration;
+      if (JSON.stringify(editFormData.specializations) !== JSON.stringify(company.specializations || [])) {
+        updateData.specializations = editFormData.specializations;
+      }
+      
+      // Scale
+      const newEmployeeCount = editFormData.employeeCount ? parseInt(editFormData.employeeCount) : undefined;
+      if (newEmployeeCount !== company.employeeCount) updateData.employeeCount = newEmployeeCount;
+      
+      // Social Links
+      if (editFormData.linkedinUrl !== company.linkedinUrl) updateData.linkedinUrl = editFormData.linkedinUrl;
+      if (editFormData.twitterUrl !== company.twitterUrl) updateData.twitterUrl = editFormData.twitterUrl;
 
       await updateCompany(company.id, updateData);
       toast.success("Company updated successfully!");
@@ -126,61 +237,205 @@ function CompanyDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl p-8"
+            className="space-y-8"
           >
-            {/* Posted Date */}
-            <div className="flex items-center text-gray-400 text-sm mb-6">
-              <Calendar className="w-4 h-4 mr-2" />
-              Posted at: {formatDate(company.createdAt)}
+            {/* Header Section */}
+            <div className="bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-6">
+                  {company.logoUrl && (
+                    <img
+                      src={company.logoUrl}
+                      alt={`${company.name} logo`}
+                      className="w-16 h-16 rounded-lg object-cover"
+                    />
+                  )}
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">{company.name}</h2>
+                    {company.tagline && (
+                      <p className="text-green-400 italic text-lg">"{company.tagline}"</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center text-gray-400 text-sm">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Created: {formatDate(company.createdAt)}
+                </div>
+              </div>
+
+              {/* Industry and Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                {company.industry && (
+                  <div className="flex items-center text-green-400">
+                    <Briefcase className="w-5 h-5 mr-2" />
+                    <span>{company.industry}</span>
+                  </div>
+                )}
+                {company.location && (
+                  <div className="flex items-center text-gray-300">
+                    <MapPin className="w-5 h-5 mr-2 text-green-400" />
+                    <span>{company.location}</span>
+                  </div>
+                )}
+                {company.employeeCount && (
+                  <div className="flex items-center text-gray-300">
+                    <Users className="w-5 h-5 mr-2 text-green-400" />
+                    <span>{company.employeeCount} employees</span>
+                  </div>
+                )}
+                {company.foundedAt && (
+                  <div className="flex items-center text-gray-300">
+                    <Calendar className="w-5 h-5 mr-2 text-green-400" />
+                    <span>Founded {new Date(company.foundedAt).getFullYear()}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Description */}
+              {company.description && (
+                <div className="mb-6">
+                  <p className="text-gray-300 leading-relaxed">{company.description}</p>
+                </div>
+              )}
+
+              {/* Links */}
+              <div className="flex gap-4">
+                {company.website && (
+                  <a
+                    href={company.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center text-green-400 hover:text-green-300 transition duration-200"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Website
+                  </a>
+                )}
+                {company.linkedinUrl && (
+                  <a
+                    href={company.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center text-blue-400 hover:text-blue-300 transition duration-200"
+                  >
+                    <Linkedin className="w-4 h-4 mr-2" />
+                    LinkedIn
+                  </a>
+                )}
+                {company.twitterUrl && (
+                  <a
+                    href={company.twitterUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center text-sky-400 hover:text-sky-300 transition duration-200"
+                  >
+                    <Twitter className="w-4 h-4 mr-2" />
+                    Twitter
+                  </a>
+                )}
+              </div>
             </div>
 
-            {/* Company Name */}
-            <h2 className="text-3xl font-bold text-white mb-4">{company.name}</h2>
+            {/* Services & Offerings */}
+            {(company.services?.length || company.technologiesUsed?.length || company.specializations?.length || company.costRange || company.deliveryDuration) && (
+              <div className="bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl p-8">
+                <h3 className="text-2xl font-bold text-white mb-6">Services & Offerings</h3>
+                
+                {company.services?.length && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold text-green-400 mb-3">Services</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {company.services.map((service, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                        >
+                          {service}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {/* Industry */}
-            {company.industry && (
-              <div className="flex items-center text-green-400 mb-4">
-                <Briefcase className="w-5 h-5 mr-2" />
-                <span className="text-lg">{company.industry}</span>
-              </div>
-            )}
+                {company.technologiesUsed?.length && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold text-blue-400 mb-3">Technologies</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {company.technologiesUsed.map((tech, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {/* Description */}
-            {company.description && (
-              <div className="mb-6">
-                <p className="text-gray-300 leading-relaxed">{company.description}</p>
+                {company.specializations?.length && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold text-purple-400 mb-3">Specializations</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {company.specializations.map((spec, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm"
+                        >
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(company.costRange || company.deliveryDuration) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {company.costRange && (
+                      <div className="flex items-center text-gray-300">
+                        <DollarSign className="w-5 h-5 mr-3 text-green-400" />
+                        <div>
+                          <p className="text-sm text-gray-400">Cost Range</p>
+                          <p>{company.costRange}</p>
+                        </div>
+                      </div>
+                    )}
+                    {company.deliveryDuration && (
+                      <div className="flex items-center text-gray-300">
+                        <Clock className="w-5 h-5 mr-3 text-green-400" />
+                        <div>
+                          <p className="text-sm text-gray-400">Delivery Duration</p>
+                          <p>{company.deliveryDuration}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Contact Information */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-gray-600">
-              <div className="flex items-center text-gray-300">
-                <Mail className="w-5 h-5 mr-3 text-green-400" />
-                <div>
-                  <p className="text-sm text-gray-400">Email</p>
-                  <p>{company.email}</p>
+            <div className="bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl p-8">
+              <h3 className="text-2xl font-bold text-white mb-6">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-center text-gray-300">
+                  <Mail className="w-5 h-5 mr-3 text-green-400" />
+                  <div>
+                    <p className="text-sm text-gray-400">Email</p>
+                    <p>{company.email}</p>
+                  </div>
                 </div>
+
+                {company.contactNumber && (
+                  <div className="flex items-center text-gray-300">
+                    <Phone className="w-5 h-5 mr-3 text-green-400" />
+                    <div>
+                      <p className="text-sm text-gray-400">Contact</p>
+                      <p>{company.contactNumber}</p>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {company.contactNumber && (
-                <div className="flex items-center text-gray-300">
-                  <Phone className="w-5 h-5 mr-3 text-green-400" />
-                  <div>
-                    <p className="text-sm text-gray-400">Contact</p>
-                    <p>{company.contactNumber}</p>
-                  </div>
-                </div>
-              )}
-
-              {company.location && (
-                <div className="flex items-center text-gray-300">
-                  <MapPin className="w-5 h-5 mr-3 text-green-400" />
-                  <div>
-                    <p className="text-sm text-gray-400">Location</p>
-                    <p>{company.location}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </motion.div>
         )}
@@ -199,10 +454,10 @@ function CompanyDashboard() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="max-w-2xl w-full bg-gray-800 bg-opacity-90 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden"
+                className="max-w-6xl w-full max-h-[90vh] bg-gray-800 bg-opacity-90 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="p-8">
+                <div className="p-8 overflow-y-auto max-h-[90vh]">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-2xl font-bold text-white">Update Company</h3>
                     <button
@@ -213,68 +468,288 @@ function CompanyDashboard() {
                     </button>
                   </div>
 
-                  <form onSubmit={handleEditSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <form onSubmit={handleEditSubmit} className="space-y-8">
+                    {/* Basic Information */}
+                    <div className="space-y-4">
+                      <h4 className="text-lg font-semibold text-white border-b border-gray-600 pb-2">Basic Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          icon={Building}
+                          type="text"
+                          name="name"
+                          placeholder="Company Name *"
+                          value={editFormData.name}
+                          onChange={handleEditInputChange}
+                          required
+                        />
+                        <Input
+                          icon={Mail}
+                          type="email"
+                          name="email"
+                          placeholder="Company Email *"
+                          value={editFormData.email}
+                          onChange={handleEditInputChange}
+                          required
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          icon={Briefcase}
+                          type="text"
+                          name="industry"
+                          placeholder="Industry"
+                          value={editFormData.industry}
+                          onChange={handleEditInputChange}
+                        />
+                        <Input
+                          icon={Phone}
+                          type="text"
+                          name="contactNumber"
+                          placeholder="Contact Number"
+                          value={editFormData.contactNumber}
+                          onChange={handleEditInputChange}
+                        />
+                      </div>
                       <Input
-                        icon={Building}
+                        icon={MapPin}
                         type="text"
-                        name="name"
-                        placeholder="Company Name *"
-                        value={editFormData.name}
+                        name="location"
+                        placeholder="Location"
+                        value={editFormData.location}
                         onChange={handleEditInputChange}
-                        required
                       />
-
-                      <Input
-                        icon={Mail}
-                        type="email"
-                        name="email"
-                        placeholder="Company Email *"
-                        value={editFormData.email}
-                        onChange={handleEditInputChange}
-                        required
-                      />
+                      <div className="relative">
+                        <FileText className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <textarea
+                          name="description"
+                          placeholder="Company Description"
+                          value={editFormData.description}
+                          onChange={handleEditInputChange}
+                          rows={4}
+                          className="w-full pl-10 pr-4 py-3 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400 transition duration-200 resize-none"
+                        />
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Input
-                        icon={Briefcase}
-                        type="text"
-                        name="industry"
-                        placeholder="Industry"
-                        value={editFormData.industry}
-                        onChange={handleEditInputChange}
-                      />
-
-                      <Input
-                        icon={Phone}
-                        type="text"
-                        name="contactNumber"
-                        placeholder="Contact Number"
-                        value={editFormData.contactNumber}
-                        onChange={handleEditInputChange}
-                      />
+                    {/* Branding */}
+                    <div className="space-y-4">
+                      <h4 className="text-lg font-semibold text-white border-b border-gray-600 pb-2">Branding</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="relative">
+                          <Upload className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                          <input
+                            type="file"
+                            name="logo"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="w-full pl-10 pr-4 py-3 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                          />
+                        </div>
+                        <Input
+                          icon={Globe}
+                          type="url"
+                          name="website"
+                          placeholder="Website URL"
+                          value={editFormData.website}
+                          onChange={handleEditInputChange}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          icon={Quote}
+                          type="text"
+                          name="tagline"
+                          placeholder="Company Tagline"
+                          value={editFormData.tagline}
+                          onChange={handleEditInputChange}
+                        />
+                        <Input
+                          icon={Calendar}
+                          type="date"
+                          name="foundedAt"
+                          placeholder="Founded Date"
+                          value={editFormData.foundedAt}
+                          onChange={handleEditInputChange}
+                        />
+                      </div>
                     </div>
 
-                    <Input
-                      icon={MapPin}
-                      type="text"
-                      name="location"
-                      placeholder="Location"
-                      value={editFormData.location}
-                      onChange={handleEditInputChange}
-                    />
+                    {/* Services & Offerings */}
+                    <div className="space-y-4">
+                      <h4 className="text-lg font-semibold text-white border-b border-gray-600 pb-2">Services & Offerings</h4>
+                      
+                      {/* Services */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Services</label>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={servicesInput}
+                              onChange={(e) => setServicesInput(e.target.value)}
+                              placeholder="Add a service"
+                              className="flex-1 px-3 py-2 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400"
+                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addToArray('services', servicesInput, setServicesInput))}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addToArray('services', servicesInput, setServicesInput)}
+                              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {editFormData.services.map((service, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
+                              >
+                                {service}
+                                <button
+                                  type="button"
+                                  onClick={() => removeFromArray('services', index)}
+                                  className="ml-2 text-green-600 hover:text-green-800"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
 
-                    <div className="relative">
-                      <FileText className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                      <textarea
-                        name="description"
-                        placeholder="Company Description"
-                        value={editFormData.description}
-                        onChange={handleEditInputChange}
-                        rows={4}
-                        className="w-full pl-10 pr-4 py-3 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400 transition duration-200 resize-none"
-                      />
+                      {/* Technologies */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Technologies Used</label>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={technologiesInput}
+                              onChange={(e) => setTechnologiesInput(e.target.value)}
+                              placeholder="Add a technology"
+                              className="flex-1 px-3 py-2 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400"
+                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addToArray('technologiesUsed', technologiesInput, setTechnologiesInput))}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addToArray('technologiesUsed', technologiesInput, setTechnologiesInput)}
+                              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {editFormData.technologiesUsed.map((tech, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                              >
+                                {tech}
+                                <button
+                                  type="button"
+                                  onClick={() => removeFromArray('technologiesUsed', index)}
+                                  className="ml-2 text-blue-600 hover:text-blue-800"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          icon={DollarSign}
+                          type="text"
+                          name="costRange"
+                          placeholder="Cost Range (e.g., $5k-$50k)"
+                          value={editFormData.costRange}
+                          onChange={handleEditInputChange}
+                        />
+                        <Input
+                          icon={Clock}
+                          type="text"
+                          name="deliveryDuration"
+                          placeholder="Delivery Duration (e.g., 2-6 weeks)"
+                          value={editFormData.deliveryDuration}
+                          onChange={handleEditInputChange}
+                        />
+                      </div>
+
+                      {/* Specializations */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Specializations</label>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={specializationsInput}
+                              onChange={(e) => setSpecializationsInput(e.target.value)}
+                              placeholder="Add a specialization"
+                              className="flex-1 px-3 py-2 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400"
+                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addToArray('specializations', specializationsInput, setSpecializationsInput))}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addToArray('specializations', specializationsInput, setSpecializationsInput)}
+                              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {editFormData.specializations.map((spec, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 text-purple-800"
+                              >
+                                {spec}
+                                <button
+                                  type="button"
+                                  onClick={() => removeFromArray('specializations', index)}
+                                  className="ml-2 text-purple-600 hover:text-purple-800"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Company Details */}
+                    <div className="space-y-4">
+                      <h4 className="text-lg font-semibold text-white border-b border-gray-600 pb-2">Company Details</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Input
+                          icon={Users}
+                          type="number"
+                          name="employeeCount"
+                          placeholder="Employee Count"
+                          value={editFormData.employeeCount}
+                          onChange={handleEditInputChange}
+                        />
+                        <Input
+                          icon={Linkedin}
+                          type="url"
+                          name="linkedinUrl"
+                          placeholder="LinkedIn URL"
+                          value={editFormData.linkedinUrl}
+                          onChange={handleEditInputChange}
+                        />
+                        <Input
+                          icon={Twitter}
+                          type="url"
+                          name="twitterUrl"
+                          placeholder="Twitter URL"
+                          value={editFormData.twitterUrl}
+                          onChange={handleEditInputChange}
+                        />
+                      </div>
                     </div>
 
                     {error && (
