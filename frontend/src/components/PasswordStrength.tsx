@@ -79,7 +79,7 @@ const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
           <div
             key={index}
             className={`h-1 w-1/4 rounded-full transition-colors duration-300 
-              ${index < strength ? getColor(strength) : "bg-gray-600"}`}
+              ${index < strength ? getColor(strength) : "bg-gray-500"}`}
           />
         ))}
       </div>

@@ -19,9 +19,9 @@ export default function RoleSelect() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F2F2F2]">
       {/* Header */}
-      <header className="w-full py-6 px-8">
+      <header className="w-full py-6 px-8 pt-8">
         <div className="flex items-center">
           <a href="/" className="flex items-center">
             <img
@@ -35,9 +35,9 @@ export default function RoleSelect() {
 
       {/* Main Content */}
       <main className="flex-1 flex items-start justify-center px-4 pt-16 pb-8">
-        <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full max-w-5xl mx-auto">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-light text-gray-900 mb-16 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-light text-[#2D2D2D] mb-16 leading-tight">
               Join as a client or company
             </h1>
 
@@ -74,7 +74,7 @@ export default function RoleSelect() {
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-normal text-gray-900 leading-relaxed px-4">
+                  <h3 className="text-2xl font-normal text-[#2D2D2D] leading-relaxed px-4">
                     I'm a client, hiring for a project
                   </h3>
                 </div>
@@ -111,7 +111,7 @@ export default function RoleSelect() {
                       </svg>
                     </div>
                   </div>
-                  <h3 className="text-2xl font-normal text-gray-900 leading-relaxed px-4">
+                  <h3 className="text-2xl font-normal text-[#2D2D2D] leading-relaxed px-4">
                     I'm a company, offering services
                   </h3>
                 </div>
