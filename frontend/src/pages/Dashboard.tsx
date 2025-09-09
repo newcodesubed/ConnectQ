@@ -95,7 +95,7 @@ export default function Dashboard() {
                       <img
                         src={company.logoUrl}
                         alt={`${company.name} logo`}
-                        className="w-16 h-16 rounded-lg object-cover border"
+                        className=" h-16 rounded-lg object-cover "
                       />
                     )}
                     <div>

@@ -249,7 +249,7 @@ function CompanyDashboard() {
                     <img
                       src={company.logoUrl}
                       alt={`${company.name} logo`}
-                      className="w-16 h-16 rounded-lg object-cover border"
+                      className="h-16 rounded-lg object-cover"
                     />
                   )}
                   <div>
@@ -417,22 +417,22 @@ function CompanyDashboard() {
             )}
 
             {/* Contact Information */}
-            <div className="bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl p-8">
-              <h3 className="text-2xl font-bold text-white mb-6">Contact Information</h3>
+            <div className="bg-white bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl p-8">
+              <h3 className="text-2xl font-bold text-[#2D2D2D] mb-6">Contact Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center text-gray-300">
-                  <Mail className="w-5 h-5 mr-3 text-green-400" />
+                <div className="flex items-center text-gray-600">
+                  <Mail className="w-5 h-5 mr-3 text-[#fa744c]" />
                   <div>
-                    <p className="text-sm text-gray-400">Email</p>
+                    <p className="text-sm text-gray-500">Email</p>
                     <p>{company.email}</p>
                   </div>
                 </div>
 
                 {company.contactNumber && (
-                  <div className="flex items-center text-gray-300">
-                    <Phone className="w-5 h-5 mr-3 text-green-400" />
+                  <div className="flex items-center text-gray-600">
+                    <Phone className="w-5 h-5 mr-3 text-[#fa744c]" />
                     <div>
-                      <p className="text-sm text-gray-400">Contact</p>
+                      <p className="text-sm text-gray-500">Contact</p>
                       <p>{company.contactNumber}</p>
                     </div>
                   </div>
@@ -449,7 +449,7 @@ function CompanyDashboard() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+              className="fixed inset-0 bg-[#f2f2f2] bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
               onClick={() => setIsEditModalOpen(false)}
             >
               <motion.div
