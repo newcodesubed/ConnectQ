@@ -107,26 +107,39 @@ function CreateCompany() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-green-900 to-emerald-900 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-4xl w-full bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden"
-      >
-        <div className="p-8">
-          <div className="text-center mb-8">
-            <Building className="w-12 h-12 text-green-400 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text">
-              Create Your Company
-            </h2>
-            <p className="text-gray-400 mt-2">Set up your company profile to get started</p>
+    <div className="min-h-screen bg-[#F2F2F2] p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Building className="w-12 h-12 text-[#fa744c]" />
+              <div>
+                <h2 className="text-3xl font-bold text-[#2D2D2D]">Create Your Company</h2>
+                <p className="text-gray-600 mt-1">Set up your company profile to get started</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-[#fa744c] hover:text-[#e8633f] transition duration-200 font-medium"
+            >
+              ← Back to Dashboard
+            </button>
           </div>
+        </div>
+
+        {/* Form Container */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl shadow-xl p-8"
+        >
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-white border-b border-gray-600 pb-2">Basic Information</h3>
+              <h3 className="text-xl font-semibold text-[#2D2D2D] border-b border-gray-200 pb-2">Basic Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   icon={Building}
@@ -181,14 +194,14 @@ function CreateCompany() {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full pl-10 pr-4 py-3 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400 transition duration-200 resize-none"
+                  className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-300 focus:border-[#fa744c] focus:ring-2 focus:ring-[#fa744c] focus:ring-opacity-20 text-[#2D2D2D] placeholder-gray-400 transition duration-200 resize-none"
                 />
               </div>
             </div>
 
             {/* Branding */}
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-white border-b border-gray-600 pb-2">Branding</h3>
+              <h3 className="text-xl font-semibold text-[#2D2D2D] border-b border-gray-200 pb-2">Branding</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative">
                   <Upload className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
@@ -197,7 +210,7 @@ function CreateCompany() {
                     name="logo"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="w-full pl-10 pr-4 py-3 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                    className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-300 focus:border-[#fa744c] focus:ring-2 focus:ring-[#fa744c] focus:ring-opacity-20 text-[#2D2D2D] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#fa744c] file:text-white hover:file:bg-[#e8633f] transition duration-200"
                   />
                 </div>
                 <Input
@@ -231,11 +244,11 @@ function CreateCompany() {
 
             {/* Offerings */}
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-white border-b border-gray-600 pb-2">Services & Offerings</h3>
+              <h3 className="text-xl font-semibold text-[#2D2D2D] border-b border-gray-200 pb-2">Services & Offerings</h3>
               
               {/* Services */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Services</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Services</label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <input
@@ -243,13 +256,13 @@ function CreateCompany() {
                       value={servicesInput}
                       onChange={(e) => setServicesInput(e.target.value)}
                       placeholder="Add a service"
-                      className="flex-1 px-3 py-2 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400"
+                      className="flex-1 px-3 py-2 bg-white rounded-lg border border-gray-300 focus:border-[#fa744c] focus:ring-2 focus:ring-[#fa744c] focus:ring-opacity-20 text-[#2D2D2D] placeholder-gray-400"
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addToArray('services', servicesInput, setServicesInput))}
                     />
                     <button
                       type="button"
                       onClick={() => addToArray('services', servicesInput, setServicesInput)}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      className="px-4 py-2 bg-[#fa744c] text-white rounded-lg hover:bg-[#e8633f] transition duration-200"
                     >
                       Add
                     </button>
@@ -276,7 +289,7 @@ function CreateCompany() {
 
               {/* Technologies */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Technologies Used</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Technologies Used</label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <input
@@ -284,13 +297,13 @@ function CreateCompany() {
                       value={technologiesInput}
                       onChange={(e) => setTechnologiesInput(e.target.value)}
                       placeholder="Add a technology"
-                      className="flex-1 px-3 py-2 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400"
+                      className="flex-1 px-3 py-2 bg-white rounded-lg border border-gray-300 focus:border-[#fa744c] focus:ring-2 focus:ring-[#fa744c] focus:ring-opacity-20 text-[#2D2D2D] placeholder-gray-400"
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addToArray('technologiesUsed', technologiesInput, setTechnologiesInput))}
                     />
                     <button
                       type="button"
                       onClick={() => addToArray('technologiesUsed', technologiesInput, setTechnologiesInput)}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      className="px-4 py-2 bg-[#fa744c] text-white rounded-lg hover:bg-[#e8633f] transition duration-200"
                     >
                       Add
                     </button>
@@ -336,7 +349,7 @@ function CreateCompany() {
 
               {/* Specializations */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Specializations</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Specializations</label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <input
@@ -344,13 +357,13 @@ function CreateCompany() {
                       value={specializationsInput}
                       onChange={(e) => setSpecializationsInput(e.target.value)}
                       placeholder="Add a specialization"
-                      className="flex-1 px-3 py-2 bg-gray-700 bg-opacity-50 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 text-white placeholder-gray-400"
+                      className="flex-1 px-3 py-2 bg-white rounded-lg border border-gray-300 focus:border-[#fa744c] focus:ring-2 focus:ring-[#fa744c] focus:ring-opacity-20 text-[#2D2D2D] placeholder-gray-400"
                       onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addToArray('specializations', specializationsInput, setSpecializationsInput))}
                     />
                     <button
                       type="button"
                       onClick={() => addToArray('specializations', specializationsInput, setSpecializationsInput)}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      className="px-4 py-2 bg-[#fa744c] text-white rounded-lg hover:bg-[#e8633f] transition duration-200"
                     >
                       Add
                     </button>
@@ -378,7 +391,7 @@ function CreateCompany() {
 
             {/* Company Scale & Social */}
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-white border-b border-gray-600 pb-2">Company Details</h3>
+              <h3 className="text-xl font-semibold text-[#2D2D2D] border-b border-gray-200 pb-2">Company Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   icon={Users}
@@ -414,7 +427,7 @@ function CreateCompany() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg shadow-lg hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 px-6 bg-[#fa744c] text-white font-bold rounded-xl shadow-lg hover:bg-[#e8633f] focus:outline-none focus:ring-2 focus:ring-[#fa744c] focus:ring-offset-2 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               disabled={loading}
             >
@@ -428,17 +441,8 @@ function CreateCompany() {
               )}
             </motion.button>
           </form>
-
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="text-green-400 hover:text-green-300 transition duration-200"
-            >
-              ← Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }
