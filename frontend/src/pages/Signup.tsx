@@ -45,7 +45,7 @@ export default function SignUpPage() {
       className="max-w-md mx-auto w-full bg-[#F2F2F2] bg-opacity-50 backdrop-filter backdrop-blur-xl rounded-2xl shadow-2xl"
     >
       <div className="p-8">
-        <h2 className="text-3xl font-bold text-center text-[#66BB6A] t bg-clip-text mb-6">
+        <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text mb-6">
           Create Account
         </h2>
 
@@ -107,10 +107,10 @@ export default function SignUpPage() {
       </div>
       <div className="px-8 py-4 bg-opacity-50 flex justify-center rounded-b-2xl">
         <p className="text-sm text-gray-400">
-          Already have an account?
+          Already have an account?{" "}
           <Link
             to="/login"
-            className="text-green-400 hover:text-green-800 ml-1"
+            className="text-green-400 hover:underline"
           >
             Log In
           </Link>
