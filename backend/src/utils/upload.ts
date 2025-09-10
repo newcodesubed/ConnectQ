@@ -36,7 +36,7 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
   }
 };
 
-// Upload configuration
+// Upload configuration for company logo
 export const uploadCompanyLogo = multer({
   storage: storage,
   fileFilter: fileFilter,
@@ -44,6 +44,15 @@ export const uploadCompanyLogo = multer({
     fileSize: 5 * 1024 * 1024, // 5MB limit
   }
 }).single('logo'); // 'logo' is the field name expected in the form
+
+// Upload configuration for client profile picture
+export const uploadClientProfile = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  }
+}).single('profilePic'); // 'profilePic' is the field name expected in the form
 
 // Helper function to clean up temporary files
 export const cleanupTempFile = (filePath: string): void => {
