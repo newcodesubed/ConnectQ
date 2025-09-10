@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Camera, User, Phone, FileText, CheckCircle } from "lucide-react";
 import { useAuthStore } from "../store/auth.store";
@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 export default function ClientGetStartedPage() {
   const { user } = useAuthStore();
-  const { createClient, client, loading, error } = useClientStore();
+  const { createClient, client, loading, error, getMyClient } = useClientStore();
   
   const [formData, setFormData] = useState({
     profilePic: null as File | null,
@@ -18,6 +18,18 @@ export default function ClientGetStartedPage() {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [showCard, setShowCard] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if client already exists
+  useEffect(() => {
+    getMyClient();
+  }, [getMyClient]);
+
+  // Show card if client exists
+  useEffect(() => {
+    if (client) {
+      setShowCard(true);
+    }
+  }, [client]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

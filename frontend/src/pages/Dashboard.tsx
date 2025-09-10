@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/auth.store";
 import { useCompanyStore } from "../store/companies.store";
+import { useClientStore } from "../store/clients.store";
 import { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
@@ -9,12 +10,14 @@ import CompanyUpdatePage from "./CompanyUpdatePage";
 import ClientGetStartedPage from "./ClientGetStartedPage";
 import ClientUpdatePage from "./ClientUpdatePage";
 import CompanyDashboard from "./CompanyDashboard";
+import ClientDashboard from "./ClientDashboard";
 
 type TabType = 'dashboard' | 'get-started' | 'manage-data';
 
 export default function Dashboard() {
   const { user, logout } = useAuthStore();
   const { company, getMyCompany } = useCompanyStore();
+  const { client: userClient, getMyClient } = useClientStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("get-started");
   
@@ -22,8 +25,10 @@ export default function Dashboard() {
   useEffect(() => {
     if (user?.role === 'company') {
       getMyCompany();
+    } else if (user?.role === 'client') {
+      getMyClient();
     }
-  }, [user?.role, getMyCompany]);
+  }, [user?.role, getMyCompany, getMyClient]);
 
   const handleLogout = async () => {
     await logout();
@@ -66,6 +71,24 @@ export default function Dashboard() {
         case "manage-data":
           return <ClientUpdatePage />;
         case "dashboard":
+          // If no client exists, show redirect to get-started
+          if (!userClient) {
+            return (
+              <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+                <h3 className="text-xl font-semibold text-[#2D2D2D] mb-2">No Client Profile Found</h3>
+                <p className="text-gray-600 mb-6">
+                  You need to create your client profile first before accessing the dashboard.
+                </p>
+                <button
+                  onClick={() => setActiveTab("get-started")}
+                  className="bg-[#fa744c] hover:bg-[#e8633f] text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+                >
+                  Go to Get Started
+                </button>
+              </div>
+            );
+          }
+          return <ClientDashboard />;
         default:
           return <ClientGetStartedPage />;
       }
