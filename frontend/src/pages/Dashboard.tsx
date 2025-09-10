@@ -22,25 +22,25 @@ export default function Dashboard() {
     navigate("/login");
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  // const formatDate = (dateString: string) => {
+  //   return new Date(dateString).toLocaleDateString('en-US', {
+  //     year: 'numeric',
+  //     month: 'long',
+  //     day: 'numeric'
+  //   });
+  // };
 
   return (
     <div className="min-h-screen bg-[#F2F2F2] p-6">
       <Toaster position="top-right" />
       
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-full mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8 bg-white rounded-2xl shadow-lg p-6">
           <div className="flex items-center gap-4">
             <img src="/logo.webp" alt="Logo" className="h-12 w-12" />
             <div>
-              <h1 className="text-3xl font-bold text-[#2D2D2D]">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-[#2D2D2D]">ConnectQ</h1>
               <p className="text-gray-600">Welcome back, {user?.name}</p>
             </div>
           </div>
@@ -231,26 +231,8 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* General Features */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-[#2D2D2D] mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 border border-gray-200 rounded-lg hover:border-[#fa744c] transition duration-200">
-              <h3 className="text-lg font-semibold text-[#2D2D2D] mb-2">Profile</h3>
-              <p className="text-gray-600 text-sm">Manage your account settings and personal information</p>
-            </div>
-            
-            <div className="p-6 border border-gray-200 rounded-lg hover:border-[#fa744c] transition duration-200">
-              <h3 className="text-lg font-semibold text-[#2D2D2D] mb-2">Security</h3>
-              <p className="text-gray-600 text-sm">Update password and security settings</p>
-            </div>
-            
-            <div className="p-6 border border-gray-200 rounded-lg hover:border-[#fa744c] transition duration-200">
-              <h3 className="text-lg font-semibold text-[#2D2D2D] mb-2">Support</h3>
-              <p className="text-gray-600 text-sm">Get help and contact our support team</p>
-            </div>
-          </div>
-        </div>
+        
+        
       </div>
     </div>
   );
