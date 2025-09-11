@@ -5,6 +5,7 @@ import { useClientStore } from "../store/clients.store";
 import { useAuthStore } from "../store/auth.store";
 import { toast } from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { TextCarousel, type TextSlide } from "../components/TextCarousel";
 
 export default function ClientDashboard() {
   const { user } = useAuthStore();
@@ -12,6 +13,30 @@ export default function ClientDashboard() {
   const [requestInput, setRequestInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Define carousel slides
+  const carouselSlides: TextSlide[] = [
+    {
+      id: "step-1",
+      title: "How It Works",
+      content: "1. Describe Your Needs - Add detailed project requirements and let us know what you're looking for in a service provider."
+    },
+    {
+      id: "step-2", 
+      title: "AI-Powered Matching",
+      content: "2. AI Matching - Our intelligent system analyzes your requirements and finds the most suitable service providers for your project."
+    },
+    {
+      id: "step-3",
+      title: "Connect & Collaborate", 
+      content: "3. Connect & Collaborate - Work directly with matched service providers and bring your projects to life with expert help."
+    },
+    {
+      id: "step-4",
+      title: "Quality Assurance",
+      content: "4. Quality & Support - Get ongoing support throughout your project journey with quality assurance and dedicated assistance."
+    }
+  ];
 
   useEffect(() => {
     getMyClient();
@@ -82,15 +107,20 @@ export default function ClientDashboard() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
+      {/* How It Works Carousel */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        transition={{ delay: 0.3 }}
       >
-        <h2 className="text-3xl font-bold text-[#2D2D2D] mb-4">Client Dashboard</h2>
-        <p className="text-gray-600">
-          Manage your project requests and connect with service providers.
-        </p>
+        <TextCarousel 
+          slides={carouselSlides}
+          autoPlay={true}
+          autoPlayInterval={5000}
+          showDots={true}
+          showArrows={true}
+          className="w-full"
+        />
       </motion.div>
 
       {/* Client Info Card */}
@@ -243,39 +273,6 @@ export default function ClientDashboard() {
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
-      </motion.div>
-
-      {/* Additional Info */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-gradient-to-r from-[#fa744c] to-[#e8633f] rounded-2xl shadow-xl p-6 text-white"
-      >
-        <h3 className="text-xl font-bold mb-2">How It Works</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div className="flex items-start gap-2">
-            <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center font-bold text-xs">1</div>
-            <div>
-              <p className="font-medium">Describe Your Needs</p>
-              <p className="opacity-90">Add detailed project requirements</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center font-bold text-xs">2</div>
-            <div>
-              <p className="font-medium">AI Matching</p>
-              <p className="opacity-90">Our system finds suitable providers</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center font-bold text-xs">3</div>
-            <div>
-              <p className="font-medium">Connect & Collaborate</p>
-              <p className="opacity-90">Work with matched service providers</p>
-            </div>
-          </div>
-        </div>
       </motion.div>
     </div>
   );

@@ -5,10 +5,10 @@ import { useAuthStore } from "../store/auth.store";
 import { useClientStore } from "../store/clients.store";
 import toast from "react-hot-toast";
 
+
 export default function ClientGetStartedPage() {
   const { user } = useAuthStore();
   const { createClient, client, loading, error, getMyClient } = useClientStore();
-  
   const [formData, setFormData] = useState({
     profilePic: null as File | null,
     contactNumber: "",
@@ -155,14 +155,7 @@ export default function ClientGetStartedPage() {
           </div>
         </motion.div>
 
-        <div className="text-center">
-          <button
-            onClick={() => setShowCard(false)}
-            className="text-[#fa744c] hover:text-[#e8633f] font-medium underline"
-          >
-            Edit Profile
-          </button>
-        </div>
+        
       </div>
     );
   }
