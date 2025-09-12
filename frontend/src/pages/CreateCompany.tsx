@@ -20,6 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
 import Input from "../components/Input";
+import DateInput from "../components/DateInput";
 import { useCompanyStore } from "../store/companies.store";
 
 function CreateCompany() {
@@ -135,7 +136,13 @@ function CreateCompany() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-xl p-8"
+          className="bg-white rounded-2xl shadow-xl p-8 framer-motion-container"
+          style={{ 
+            transformStyle: 'preserve-3d',
+            backfaceVisibility: 'hidden',
+            position: 'relative',
+            zIndex: 1
+          }}
         >
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -233,9 +240,8 @@ function CreateCompany() {
                   value={formData.tagline}
                   onChange={handleInputChange}
                 />
-                <Input
+                <DateInput
                   icon={Calendar}
-                  type="date"
                   name="foundedAt"
                   placeholder="Founded Date"
                   value={formData.foundedAt}

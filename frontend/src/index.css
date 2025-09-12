@@ -4,3 +4,53 @@
 body{
     font-family: 'Rubik', sans-serif;
 }
+
+/* Fix date picker positioning issues */
+input[type="date"] {
+    position: relative;
+    z-index: 9999;
+}
+
+/* Ensure date picker calendar appears above other elements */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: relative;
+    z-index: 9999;
+    cursor: pointer;
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    display: block;
+    right: 0;
+    top: 0;
+    width: auto;
+}
+
+/* Fix for date input containers */
+.date-input-container {
+    position: relative;
+    z-index: 9999;
+    isolation: isolate;
+}
+
+/* Ensure modals and overlays don't interfere with date picker */
+.date-picker-overlay {
+    position: fixed !important;
+    z-index: 10000 !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+/* Fix for Framer Motion containers that might interfere */
+.framer-motion-container {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
+/* Force date picker to appear in viewport */
+input[type="date"]:focus {
+    position: relative;
+    z-index: 10001;
+}
