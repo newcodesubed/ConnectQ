@@ -30,6 +30,13 @@ export default function Dashboard() {
     }
   }, [user?.role, getMyCompany, getMyClient]);
 
+  // Auto-navigate to dashboard tab when company is created
+  useEffect(() => {
+    if (user?.role === 'company' && company && activeTab === 'get-started') {
+      setActiveTab('dashboard');
+    }
+  }, [company, user?.role, activeTab]);
+
   const handleLogout = async () => {
     await logout();
     navigate("/login");

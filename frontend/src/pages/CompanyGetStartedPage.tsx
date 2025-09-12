@@ -68,7 +68,13 @@ export default function CompanyGetStartedPage({ onViewProfile }: CompanyGetStart
         </div>
         
         <button
-          onClick={() => onViewProfile ? onViewProfile() : navigate("/company/dashboard")}
+          onClick={() => {
+            if (onViewProfile) {
+              onViewProfile();
+            } else {
+              navigate("/dashboard");
+            }
+          }}
           className="bg-[#fa744c] hover:bg-[#e8633f] text-white px-6 py-3 rounded-lg transition duration-200 flex items-center gap-2"
         >
           <Eye className="w-5 h-5" />

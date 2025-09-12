@@ -18,7 +18,7 @@ import {
   Twitter
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import Input from "../components/Input";
 import { useCompanyStore } from "../store/companies.store";
 
@@ -100,7 +100,8 @@ function CreateCompany() {
       };
       await createCompany(submitData);
       toast.success("Company created successfully!");
-      navigate("/company/dashboard");
+      // Navigate back to dashboard where the company will be displayed
+      navigate("/dashboard");
     } catch {
       toast.error(error || "Failed to create company");
     }
@@ -108,6 +109,7 @@ function CreateCompany() {
 
   return (
     <div className="min-h-screen bg-[#F2F2F2] p-6">
+      <Toaster position="top-right" />
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">

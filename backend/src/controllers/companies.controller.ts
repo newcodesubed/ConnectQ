@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { CompanyRepository } from "../repository/companies.repository";
 import { uploadImage, deleteImage } from "../utils/cloudinary";
 import { cleanupTempFile } from "../utils/upload";
+import { embedSingleCompany } from "../services/embedding.service";
 import logger from "../utils/logger";
 
 export const createCompany = async (req: Request, res: Response) => {
@@ -106,6 +107,19 @@ export const createCompany = async (req: Request, res: Response) => {
     const newCompany = await CompanyRepository.create(companyData);
 
     logger.info(`Company created successfully: ${newCompany.name} by user ${userId}`);
+
+    // Automatically embed the new company in the background
+    embedSingleCompany(newCompany.id)
+      .then((result) => {
+        if (result.success) {
+          logger.info(`Company embedding successful: ${newCompany.name} (${newCompany.id})`);
+        } else {
+          logger.warn(`Company embedding failed: ${newCompany.name} (${newCompany.id}) - ${result.message}`);
+        }
+      })
+      .catch((error) => {
+        logger.error(`Company embedding error: ${newCompany.name} (${newCompany.id})`, error);
+      });
 
     res.status(201).json({
       success: true,
@@ -282,6 +296,19 @@ export const updateCompany = async (req: Request, res: Response) => {
     }
 
     logger.info(`Company updated successfully: ${updatedCompany.name} by user ${userId}`);
+
+    // Automatically re-embed the updated company in the background
+    embedSingleCompany(updatedCompany.id)
+      .then((result) => {
+        if (result.success) {
+          logger.info(`Company re-embedding successful: ${updatedCompany.name} (${updatedCompany.id})`);
+        } else {
+          logger.warn(`Company re-embedding failed: ${updatedCompany.name} (${updatedCompany.id}) - ${result.message}`);
+        }
+      })
+      .catch((error) => {
+        logger.error(`Company re-embedding error: ${updatedCompany.name} (${updatedCompany.id})`, error);
+      });
 
     res.status(200).json({
       success: true,

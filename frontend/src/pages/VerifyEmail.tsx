@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Loader } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth.store";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 function EmailVerificationPage() {
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
@@ -50,8 +50,14 @@ function EmailVerificationPage() {
     try {
       await verifyEmail(verificationCode);
       if (!error) {
-        navigate("/dashboard");
-        toast.success("Email verified successfully");
+        toast.success("Email verified successfully", {
+          duration: 2000,
+          position: 'top-center',
+        });
+        // Small delay to show the toast before navigation
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1500);
       }
     } catch (error) {
       console.log(error);
@@ -64,8 +70,14 @@ function EmailVerificationPage() {
       const verificationCode = code.join('');
       verifyEmail(verificationCode).then(() => {
         if (!error) {
-          navigate("/dashboard");
-          toast.success("Email verified successfully");
+          toast.success("Email verified successfully", {
+            duration: 2000,
+            position: 'top-center',
+          });
+          // Small delay to show the toast before navigation
+          setTimeout(() => {
+            navigate("/dashboard");
+          }, 1500);
         }
       }).catch((error) => {
         console.log(error);
@@ -75,6 +87,30 @@ function EmailVerificationPage() {
 
   return (
     <div className="min-h-screen bg-[#F2F2F2] flex items-center justify-center p-6">
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 2000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 2000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
