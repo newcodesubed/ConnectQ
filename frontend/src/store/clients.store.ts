@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import axios, { AxiosError } from "axios";
+import { companySearchService, type SearchResult } from "../services/companySearch.service";
 
 const API_URL = "http://localhost:5000/api/clients";
 axios.defaults.withCredentials = true;
@@ -47,6 +48,8 @@ export interface OpenRequest {
 interface ClientState {
   client: Client | null;
   openRequests: OpenRequest[];
+  searchResults: SearchResult[];
+  searchLoading: boolean;
   loading: boolean;
   error: string | null;
   message: string | null;
@@ -59,16 +62,41 @@ interface ClientState {
   updateClientStatus: (id: string, status: 'open' | 'matched' | 'closed') => Promise<void>;
   deleteClient: (id: string) => Promise<void>;
   getOpenRequests: () => Promise<void>;
+  searchCompanies: (query: string, topK?: number) => Promise<void>;
+  clearSearchResults: () => void;
 }
 
 export const useClientStore = create<ClientState>((set) => ({
   client: null,
   openRequests: [],
+  searchResults: [],
+  searchLoading: false,
   loading: false,
   error: null,
   message: null,
 
   clearError: () => set({ error: null, message: null }),
+
+  searchCompanies: async (query: string, topK: number = 10) => {
+    set({ searchLoading: true, error: null });
+    try {
+      const results = await companySearchService.searchCompanies(query, topK);
+      set({ 
+        searchResults: results,
+        searchLoading: false
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to search companies';
+      set({ 
+        error: errorMessage,
+        searchLoading: false,
+        searchResults: []
+      });
+      throw err;
+    }
+  },
+
+  clearSearchResults: () => set({ searchResults: [], error: null }),
 
   createClient: async (data: CreateClientData) => {
     set({ loading: true, error: null });
