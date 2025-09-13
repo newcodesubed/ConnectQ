@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Save, Edit3, Plus, FileText, User } from "lucide-react";
+import {  Plus, User } from "lucide-react";
 import { useClientStore } from "../store/clients.store";
 import { useAuthStore } from "../store/auth.store";
 import { toast } from "react-hot-toast";
@@ -16,7 +16,6 @@ export default function ClientDashboard() {
     loading, 
     error, 
     getMyClient, 
-    updateClient,
     searchResults,
     searchLoading,
     searchCompanies,
@@ -24,7 +23,6 @@ export default function ClientDashboard() {
   } = useClientStore();
   const [requestInput, setRequestInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Define carousel slides
@@ -61,28 +59,28 @@ export default function ClientDashboard() {
     }
   }, [client]);
 
-  const handleSaveRequest = async () => {
-    if (!client) return;
+  // const handleSaveRequest = async () => {
+  //   if (!client) return;
     
-    if (!requestInput.trim()) {
-      toast.error("Please enter a request description");
-      return;
-    }
+  //   if (!requestInput.trim()) {
+  //     toast.error("Please enter a request description");
+  //     return;
+  //   }
 
-    setIsSaving(true);
-    try {
-      await updateClient(client.id, {
-        description: requestInput.trim()
-      });
-      toast.success("Request saved successfully!");
-      setIsEditing(false);
-    } catch (err) {
-      console.error("Error saving request:", err);
-      toast.error("Failed to save request");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  //   setIsSaving(true);
+  //   try {
+  //     await updateClient(client.id, {
+  //       description: requestInput.trim()
+  //     });
+  //     toast.success("Request saved successfully!");
+  //     setIsEditing(false);
+  //   } catch (err) {
+  //     console.error("Error saving request:", err);
+  //     toast.error("Failed to save request");
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -100,18 +98,18 @@ export default function ClientDashboard() {
     clearSearchResults();
   };
 
-  const handleEditRequest = () => {
-    setIsEditing(true);
-  };
+  // const handleEditRequest = () => {
+  //   setIsEditing(true);
+  // };
 
-  const handleCancelEdit = () => {
-    if (client && client.description) {
-      setRequestInput(client.description);
-    } else {
-      setRequestInput("");
-    }
-    setIsEditing(false);
-  };
+  // const handleCancelEdit = () => {
+  //   if (client && client.description) {
+  //     setRequestInput(client.description);
+  //   } else {
+  //     setRequestInput("");
+  //   }
+  //   setIsEditing(false);
+  // };
 
   if (loading && !client) {
     return <LoadingSpinner />;
