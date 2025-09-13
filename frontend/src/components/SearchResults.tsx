@@ -107,8 +107,26 @@ export default function SearchResults({ results, loading, query, onClearResults 
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-[#fa744c] bg-opacity-10 rounded-xl flex items-center justify-center">
-                <Building className="w-8 h-8 text-[#fa744c]" />
+              <div className="w-16 h-16 bg-[#fa744c] bg-opacity-10 rounded-xl flex items-center justify-center overflow-hidden">
+                {company.metadata.logoUrl ? (
+                  <>
+                    <img 
+                      src={company.metadata.logoUrl} 
+                      alt={`${company.metadata.name} logo`}
+                      className="w-full h-full object-cover rounded-xl"
+                      onError={(e) => {
+                        // Fallback to icon if image fails to load
+                        const img = e.currentTarget;
+                        const iconElement = img.nextElementSibling as HTMLElement;
+                        img.style.display = 'none';
+                        if (iconElement) iconElement.style.display = 'flex';
+                      }}
+                    />
+                    <Building className="w-8 h-8 text-[#fa744c] hidden" />
+                  </>
+                ) : (
+                  <Building className="w-8 h-8 text-[#fa744c]" />
+                )}
               </div>
               <div>
                 <h2 className="text-3xl font-bold text-[#2D2D2D]">{company.metadata.name}</h2>
@@ -334,6 +352,7 @@ export default function SearchResults({ results, loading, query, onClearResults 
           </h3>
           <p className="text-gray-600 mt-1">
             Found {results.length} matching companies for: <span className="font-medium">"{query}"</span>
+            <span className="text-sm text-gray-500 ml-2">• Sorted by relevance</span>
           </p>
         </div>
         <button
@@ -355,8 +374,26 @@ export default function SearchResults({ results, loading, query, onClearResults 
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4 flex-1">
-                <div className="w-12 h-12 bg-[#fa744c] bg-opacity-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Building className="w-6 h-6 text-[#fa744c]" />
+                <div className="w-12 h-12 bg-[#fa744c] bg-opacity-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {result.metadata.logoUrl ? (
+                    <>
+                      <img 
+                        src={result.metadata.logoUrl} 
+                        alt={`${result.metadata.name} logo`}
+                        className="w-full h-full object-cover rounded-lg"
+                        onError={(e) => {
+                          // Fallback to icon if image fails to load
+                          const img = e.currentTarget;
+                          const iconElement = img.nextElementSibling as HTMLElement;
+                          img.style.display = 'none';
+                          if (iconElement) iconElement.style.display = 'flex';
+                        }}
+                      />
+                      <Building className="w-6 h-6 text-[#fa744c] hidden" />
+                    </>
+                  ) : (
+                    <Building className="w-6 h-6 text-[#fa744c]" />
+                  )}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -367,6 +404,11 @@ export default function SearchResults({ results, loading, query, onClearResults 
                       <Star className="w-3 h-3" />
                       {Math.round(result.score * 100)}% match
                     </div>
+                    {result.metadata.matching_chunks && (
+                      <div className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                        📦 {result.metadata.matching_chunks} chunks
+                      </div>
+                    )}
                   </div>
                   
                   {result.metadata.tagline && (

@@ -584,25 +584,37 @@ export async function searchCompanies(query: string, topK: number = 10): Promise
       .slice(0, topK); // Limit to requested number of companies
 
     // Format results to match the original interface
-    const formattedMatches = rankedCompanies.map(company => ({
-      id: company.company_id,
-      score: company.best_score, // Use best score for display
-      metadata: {
-        ...company.metadata,
-        // Add aggregation info for debugging
-        matching_chunks: company.matching_chunks,
-        weighted_score: company.weighted_score,
-        chunk_details: company.chunk_details
-      }
-    }));
+    const formattedMatches = rankedCompanies.map((company, index) => {
+      // Create a more intuitive display score that reflects the ranking
+      const maxWeightedScore = rankedCompanies[0].weighted_score;
+      const normalizedScore = company.weighted_score / maxWeightedScore;
+      const displayScore = Math.max(0.5, normalizedScore) * Math.max(company.best_score, 0.6);
+      
+      return {
+        id: company.company_id,
+        score: Math.min(displayScore, 1.0),
+        metadata: {
+          ...company.metadata,
+          // Add aggregation info for debugging
+          matching_chunks: company.matching_chunks,
+          weighted_score: company.weighted_score,
+          best_individual_score: company.best_score,
+          normalized_score: normalizedScore,
+          chunk_details: company.chunk_details
+        }
+      };
+    });
 
     console.log(`Aggregated ${searchResults.matches.length} chunks into ${formattedMatches.length} companies`);
-    console.log(`Top 3 companies with scores:`, formattedMatches.slice(0, 3).map(m => ({
-      name: m.metadata.name,
-      score: m.score,
-      weighted_score: m.metadata.weighted_score,
-      chunks: m.metadata.matching_chunks
-    })));
+    console.log(`Top 3 companies ordered by weighted score:`);
+    formattedMatches.slice(0, 3).forEach((match, index) => {
+      console.log(`${index + 1}. ${match.metadata.name}`);
+      console.log(`   Display Score: ${(match.score * 100).toFixed(1)}%`);
+      console.log(`   Weighted Score: ${match.metadata.weighted_score.toFixed(4)}`);
+      console.log(`   Best Individual: ${match.metadata.best_individual_score.toFixed(4)}`);
+      console.log(`   Normalized: ${(match.metadata.normalized_score * 100).toFixed(1)}%`);
+      console.log(`   Matching Chunks: ${match.metadata.matching_chunks}`);
+    });
 
     return {
       matches: formattedMatches,

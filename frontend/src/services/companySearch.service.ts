@@ -15,16 +15,27 @@ export interface SearchResult {
     description?: string;
     website?: string;
     tagline?: string;
+    logoUrl?: string;
     services?: string;
     technologiesUsed?: string;
     specializations?: string;
     employeeCount?: number;
     costRange?: string;
     deliveryDuration?: string;
+    contactNumber?: string;
     linkedinUrl?: string;
     twitterUrl?: string;
     chunk_text?: string;
     embedded_at?: string;
+    // Debug information
+    matching_chunks?: number;
+    weighted_score?: number;
+    chunk_details?: Array<{
+      score: number;
+      chunk_type: string;
+      importance: number;
+      text: string;
+    }>;
   };
 }
 
