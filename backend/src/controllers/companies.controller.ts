@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { CompanyRepository } from "../repository/companies.repository";
 import { uploadImage, deleteImage } from "../utils/cloudinary";
 import { cleanupTempFile } from "../utils/upload";
-import { embedSingleCompany } from "../services/embedding.service";
+import { embedSingleCompany, removeCompanyEmbeddings } from "../services/embedding.service";
 import logger from "../utils/logger";
 
 export const createCompany = async (req: Request, res: Response) => {
@@ -347,6 +347,76 @@ export const getMyCompany = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     logger.error("Error fetching user's company:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+export const deleteCompany = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).userId;
+
+    // Check if company exists and user owns it
+    const existingCompany = await CompanyRepository.findById(id);
+    
+    if (!existingCompany) {
+      return res.status(404).json({
+        success: false,
+        message: "Company not found"
+      });
+    }
+
+    if (existingCompany.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. You can only delete your own company."
+      });
+    }
+
+    // Store company name for logging
+    const companyName = existingCompany.name;
+
+    // Delete company logo from Cloudinary if it exists
+    if (existingCompany.logoUrl) {
+      try {
+        const urlParts = existingCompany.logoUrl.split('/');
+        const publicIdWithExtension = urlParts.slice(-2).join('/'); // folder/filename
+        const publicId = publicIdWithExtension.split('.')[0]; // remove extension
+        await deleteImage(publicId);
+        logger.info(`Deleted logo from Cloudinary for company: ${companyName}`);
+      } catch (cloudinaryError) {
+        logger.warn(`Failed to delete logo from Cloudinary for company: ${companyName}`, cloudinaryError);
+        // Continue with deletion even if logo cleanup fails
+      }
+    }
+
+    // Remove company embeddings from Pinecone
+    try {
+      const embeddingResult = await removeCompanyEmbeddings(id);
+      if (embeddingResult.success) {
+        logger.info(`Removed embeddings for company: ${companyName} (${id})`);
+      } else {
+        logger.warn(`Failed to remove embeddings for company: ${companyName} (${id}) - ${embeddingResult.message}`);
+      }
+    } catch (embeddingError) {
+      logger.error(`Error removing embeddings for company: ${companyName} (${id})`, embeddingError);
+      // Continue with deletion even if embedding cleanup fails
+    }
+
+    // Delete company from database
+    await CompanyRepository.delete(id);
+
+    logger.info(`Company deleted successfully: ${companyName} by user ${userId}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Company deleted successfully"
+    });
+  } catch (error: any) {
+    logger.error("Error deleting company:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error"

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCompany, getCompany, updateCompany, getMyCompany } from "../controllers/companies.controller";
+import { createCompany, getCompany, updateCompany, getMyCompany, deleteCompany } from "../controllers/companies.controller";
 import { verifyToken } from "../middlewares/verifyToken";
 import { uploadCompanyLogo } from "../utils/upload";
 import { UserRepository } from "../repository/user.repository";
@@ -80,5 +80,8 @@ router.get("/:id", verifyToken, requireCompanyRole, getCompany);
 
 // PUT /companies/:id - Update company (requires company role, supports file upload)
 router.put("/:id", verifyToken, requireCompanyRole, uploadCompanyLogo, handleMulterError, updateCompany);
+
+// DELETE /companies/:id - Delete company (requires company role)
+router.delete("/:id", verifyToken, requireCompanyRole, deleteCompany);
 
 export default router;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Request, Response } from 'express';
-import { embedAndStoreCompanies, embedSingleCompany, searchCompanies } from '../services/embedding.service';
+import { embedAndStoreCompanies, embedSingleCompany, searchCompanies, removeCompanyEmbeddings } from '../services/embedding.service';
 import { verifyToken } from '../middlewares/verifyToken';
 
 const router = Router();
@@ -63,6 +63,41 @@ router.post('/embed-company/:companyId', verifyToken, async (req: Request, res: 
     res.status(500).json({
       success: false,
       message: 'Internal server error while embedding company'
+    });
+  }
+});
+
+// Route to remove company embeddings when company is deleted
+router.delete('/remove-company/:companyId', verifyToken, async (req: Request, res: Response) => {
+  try {
+    const { companyId } = req.params;
+    
+    if (!companyId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Company ID is required'
+      });
+    }
+    
+    console.log(`Removing embeddings for deleted company: ${companyId}`);
+    const result = await removeCompanyEmbeddings(companyId);
+    
+    if (result.success) {
+      res.status(200).json({
+        success: true,
+        message: result.message
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.message
+      });
+    }
+  } catch (error) {
+    console.error('Error in remove-company route:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while removing company embeddings'
     });
   }
 });
