@@ -2,9 +2,68 @@ import ai from '../config/gemini';
 import { pinecone, index } from '../config/pinecone';
 import { db } from '../db';
 import { companies } from '../model/companies.model';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { Company } from '../model/companies.model';
 import config from '../config';
+
+// --- Domain/intent helpers -------------------------------------------------
+type DomainKey = 'healthcare' | 'finance' | 'education' | 'ecommerce' | 'automotive' | 'marketing' | 'environment' | 'saas';
+
+const DOMAIN_KEYWORDS: Record<DomainKey, string[]> = {
+  healthcare: ['healthcare', 'health care', 'patient', 'hospital', 'clinic', 'medical', 'ehr', 'emr', 'telemedicine', 'pharma', 'doctor', 'nurse'],
+  finance: ['finance', 'financial', 'fintech', 'bank', 'trading', 'payments', 'insurance', 'loan', 'ledger'],
+  education: ['education', 'edtech', 'school', 'university', 'student', 'learning', 'lms'],
+  ecommerce: ['ecommerce', 'e-commerce', 'shop', 'store', 'cart', 'marketplace', 'retail'],
+  automotive: ['automotive', 'vehicle', 'car', 'autonomous', 'mobility'],
+  marketing: ['marketing', 'advertising', 'adtech', 'campaign', 'brand', 'promotion', 'media'],
+  environment: ['environment', 'green', 'sustainability', 'energy', 'climate'],
+  saas: ['saas', 'productivity', 'workflow', 'collaboration']
+};
+
+function textIncludesAny(text: string, words: string[]): { count: number; matches: string[] } {
+  const lc = (text || '').toLowerCase();
+  let count = 0;
+  const matches: string[] = [];
+  for (const w of words) {
+    if (lc.includes(w)) {
+      count += 1;
+      matches.push(w);
+    }
+  }
+  return { count, matches };
+}
+
+function detectQueryDomainIntent(query: string): { topDomain: DomainKey | null; domainScores: Record<DomainKey, number>; matched: Record<DomainKey, string[]> } {
+  const q = (query || '').toLowerCase();
+  const scores: Record<DomainKey, number> = {
+    healthcare: 0, finance: 0, education: 0, ecommerce: 0, automotive: 0, marketing: 0, environment: 0, saas: 0
+  };
+  const matched: Record<DomainKey, string[]> = {
+    healthcare: [], finance: [], education: [], ecommerce: [], automotive: [], marketing: [], environment: [], saas: []
+  };
+  (Object.keys(DOMAIN_KEYWORDS) as DomainKey[]).forEach((k) => {
+    const res = textIncludesAny(q, DOMAIN_KEYWORDS[k]);
+    scores[k] = res.count;
+    matched[k] = res.matches;
+  });
+  // choose top domain if there is a clear signal
+  let top: DomainKey | null = null;
+  let max = 0;
+  for (const k of Object.keys(scores) as DomainKey[]) {
+    if (scores[k] > max) { max = scores[k]; top = k; }
+  }
+  // require at least 1 keyword match to pick a domain
+  if (max === 0) top = null;
+  return { topDomain: top, domainScores: scores, matched };
+}
+
+function computeCompanyDomainMatch(meta: any, domain: DomainKey): { count: number; matches: string[] } {
+  if (!domain) return { count: 0, matches: [] };
+  const fields = [
+    meta?.industry, meta?.services, meta?.specializations, meta?.description, meta?.name
+  ].filter(Boolean).join(' | ');
+  return textIncludesAny(fields, DOMAIN_KEYWORDS[domain]);
+}
 
 // Enhanced chunking function to create focused document chunks
 function createCompanyChunks(company: Company): Array<{ text: string; type: string; importance: number }> {
@@ -492,6 +551,12 @@ export async function searchCompanies(query: string, topK: number = 10): Promise
   try {
     console.log(`Searching companies with query: "${query}"`);
     
+    // Detect query domain intent (healthcare, finance, etc.)
+    const intent = detectQueryDomainIntent(query);
+    if (intent.topDomain) {
+      console.log(`Detected domain intent: ${intent.topDomain} via keywords [${intent.matched[intent.topDomain].join(', ')}]`);
+    }
+    
     // Generate embedding for the search query
     const queryEmbedding = await ai.models.embedContent({
       model: 'gemini-embedding-001',
@@ -564,9 +629,11 @@ export async function searchCompanies(query: string, topK: number = 10): Promise
         company.best_score = score;
       }
       
-      // Add to weighted score (with diminishing returns for additional chunks)
-      const diminishingFactor = 1 / Math.sqrt(company.matching_chunks);
-      company.weighted_score += (score * importance * diminishingFactor);
+      // Add to weighted score with stronger diminishing returns and chunk count normalization
+      const diminishingFactor = 1 / Math.pow(company.matching_chunks, 0.75); // Stronger diminishing returns
+      const chunkCountPenalty = Math.min(1.0, 8 / company.total_chunks); // Penalty for having too many chunks
+      
+      company.weighted_score += (score * importance * diminishingFactor * chunkCountPenalty);
       company.matching_chunks++;
       
       // Store chunk details for debugging
@@ -578,26 +645,115 @@ export async function searchCompanies(query: string, topK: number = 10): Promise
       });
     });
 
-    // Convert to array and sort by weighted score
+    // Convert to array and calculate balanced scores
     const rankedCompanies = Array.from(companyMap.values())
-      .sort((a, b) => b.weighted_score - a.weighted_score)
+      .map(company => {
+        // Calculate balanced score considering quality over quantity
+        const avgScore = company.weighted_score / company.matching_chunks;
+        const qualityBonus = company.best_score * 0.3; // Bonus for high-quality matches
+        const diversityBonus = Math.min(company.matching_chunks / company.total_chunks, 1) * 0.2;
+        
+        // Intent/domain boost: if query intent is detected, boost companies whose
+        // metadata suggests they operate in that domain. Small penalty for clearly mismatched domains.
+        let intentBoost = 0;
+        let intentDiagnostics: any = null;
+        if (intent.topDomain) {
+          const match = computeCompanyDomainMatch(company.metadata, intent.topDomain);
+          // scale boost by number of matching keywords found in company fields
+          // cap at ~0.08 to keep effect meaningful but not overwhelming
+          intentBoost = Math.min(0.08, 0.03 * match.count);
+          // very small penalty when the company looks strongly like another domain (e.g., marketing) while intent is healthcare
+          // check a few competing domains just to nudge ordering
+          const competingDomains: DomainKey[] = (Object.keys(DOMAIN_KEYWORDS) as DomainKey[]).filter(d => d !== intent.topDomain);
+          let maxOther = 0;
+          for (const d of competingDomains) {
+            const other = computeCompanyDomainMatch(company.metadata, d);
+            if (other.count > maxOther) maxOther = other.count;
+          }
+          const penalty = Math.min(0.03, Math.max(0, maxOther - match.count) * 0.01);
+          intentBoost -= penalty;
+          intentDiagnostics = { domain: intent.topDomain, matchCount: match.count, penaltyFromOther: maxOther, intentBoost };
+        }
+        
+        // Final balanced score (prevents volume bias) + intent boost
+        const balancedScore = avgScore + qualityBonus + diversityBonus + intentBoost;
+        
+        return {
+          ...company,
+          avg_score: avgScore,
+          quality_bonus: qualityBonus,
+          diversity_bonus: diversityBonus,
+          balanced_score: balancedScore,
+          intent_boost: intentBoost,
+          intent_diagnostics: intentDiagnostics
+        };
+      })
+      .sort((a, b) => b.balanced_score - a.balanced_score)
       .slice(0, topK); // Limit to requested number of companies
 
-    // Format results to match the original interface
+    // Get full company data for the matched company IDs
+    const companyIds = rankedCompanies.map(c => c.company_id);
+    const companiesData = await db.select().from(companies).where(
+      sql`${companies.id} IN (${sql.join(companyIds.map(id => sql`${id}`), sql`, `)})`
+    );
+    
+    // Create lookup map for company data
+    const companyDataMap = new Map();
+    companiesData.forEach(company => {
+      companyDataMap.set(company.id, company);
+    });
+
+    // Format results to match the original interface with full company data
     const formattedMatches = rankedCompanies.map((company, index) => {
-      // Create a more intuitive display score that reflects the ranking
-      const maxWeightedScore = rankedCompanies[0].weighted_score;
-      const normalizedScore = company.weighted_score / maxWeightedScore;
-      const displayScore = Math.max(0.5, normalizedScore) * Math.max(company.best_score, 0.6);
+      // Create display score based on balanced ranking
+      const maxBalancedScore = rankedCompanies[0].balanced_score;
+      const minBalancedScore = rankedCompanies[rankedCompanies.length - 1].balanced_score;
+      
+      // Normalize balanced score to 0.5-1.0 range while maintaining order
+      const normalizedScore = (company.balanced_score - minBalancedScore) / (maxBalancedScore - minBalancedScore);
+      const displayScore = 0.5 + (normalizedScore * 0.5); // Maps to 50%-100% range
+      
+      // Get full company data
+      const fullCompanyData = companyDataMap.get(company.company_id);
       
       return {
         id: company.company_id,
-        score: Math.min(displayScore, 1.0),
+        score: displayScore,
+        // Include all company fields directly
+        name: fullCompanyData?.name,
+        location: fullCompanyData?.location,
+        employees: fullCompanyData?.employeeCount,
+        industry: fullCompanyData?.industry,
+        description: fullCompanyData?.description,
+        email: fullCompanyData?.email,
+        website: fullCompanyData?.website,
+        logoUrl: fullCompanyData?.logoUrl,
+        services: fullCompanyData?.services,
+        technologiesUsed: fullCompanyData?.technologiesUsed,
+        // Enhanced scoring info for debugging
+        display_score: displayScore,
+        balanced_score: company.balanced_score,
+  intent_boost: company.intent_boost,
+  intent_diagnostics: company.intent_diagnostics,
+        matching_chunks: company.matching_chunks,
+        total_chunks: company.total_chunks,
+        weighted_score: company.weighted_score,
+        avg_score: company.avg_score,
+        quality_bonus: company.quality_bonus,
+        diversity_bonus: company.diversity_bonus,
+        best_individual_score: company.best_score,
+        normalized_score: normalizedScore,
+        chunk_details: company.chunk_details,
         metadata: {
           ...company.metadata,
-          // Add aggregation info for debugging
+          // Add enhanced scoring info for debugging
           matching_chunks: company.matching_chunks,
+          total_chunks: company.total_chunks,
           weighted_score: company.weighted_score,
+          avg_score: company.avg_score,
+          quality_bonus: company.quality_bonus,
+          diversity_bonus: company.diversity_bonus,
+          balanced_score: company.balanced_score,
           best_individual_score: company.best_score,
           normalized_score: normalizedScore,
           chunk_details: company.chunk_details
@@ -606,14 +762,17 @@ export async function searchCompanies(query: string, topK: number = 10): Promise
     });
 
     console.log(`Aggregated ${searchResults.matches.length} chunks into ${formattedMatches.length} companies`);
-    console.log(`Top 3 companies ordered by weighted score:`);
+    console.log(`Top 3 companies ordered by balanced score:`);
     formattedMatches.slice(0, 3).forEach((match, index) => {
-      console.log(`${index + 1}. ${match.metadata.name}`);
-      console.log(`   Display Score: ${(match.score * 100).toFixed(1)}%`);
-      console.log(`   Weighted Score: ${match.metadata.weighted_score.toFixed(4)}`);
-      console.log(`   Best Individual: ${match.metadata.best_individual_score.toFixed(4)}`);
-      console.log(`   Normalized: ${(match.metadata.normalized_score * 100).toFixed(1)}%`);
-      console.log(`   Matching Chunks: ${match.metadata.matching_chunks}`);
+      console.log(`${index + 1}. ${match.name}`);
+      console.log(`   Display Score: ${(match.display_score * 100).toFixed(1)}%`);
+      console.log(`   Balanced Score: ${match.balanced_score.toFixed(4)}`);
+      console.log(`   Avg Score: ${match.avg_score.toFixed(4)}`);
+      console.log(`   Quality Bonus: ${match.quality_bonus.toFixed(4)}`);
+      if (typeof match.intent_boost === 'number') {
+        console.log(`   Intent Boost: ${match.intent_boost.toFixed(4)}${match.intent_diagnostics?.domain ? ` (${match.intent_diagnostics.domain})` : ''}`);
+      }
+      console.log(`   Chunks: ${match.matching_chunks}/${match.total_chunks}`);
     });
 
     return {
