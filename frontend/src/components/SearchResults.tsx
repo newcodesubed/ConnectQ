@@ -107,22 +107,23 @@ export default function SearchResults({ results, loading, query, onClearResults 
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-[#fa744c] bg-opacity-10 rounded-xl flex items-center justify-center overflow-hidden">
+              <div className="w-16 h-16 bg-white border border-[#fa744c]/20 rounded-xl flex items-center justify-center overflow-hidden p-2">
                 {company.metadata.logoUrl ? (
                   <>
-                    <img 
-                      src={company.metadata.logoUrl} 
+                    <img
+                      src={company.metadata.logoUrl}
                       alt={`${company.metadata.name} logo`}
-                      className="w-full h-full object-cover rounded-xl"
+                      className="max-w-full max-h-full object-contain block"
                       onError={(e) => {
-                        // Fallback to icon if image fails to load
                         const img = e.currentTarget;
-                        const iconElement = img.nextElementSibling as HTMLElement;
+                        const fallback = img.nextElementSibling as HTMLElement;
                         img.style.display = 'none';
-                        if (iconElement) iconElement.style.display = 'flex';
+                        if (fallback) fallback.style.display = 'flex';
                       }}
                     />
-                    <Building className="w-8 h-8 text-[#fa744c] hidden" />
+                    <div className="hidden w-full h-full items-center justify-center">
+                      <Building className="w-8 h-8 text-[#fa744c]" />
+                    </div>
                   </>
                 ) : (
                   <Building className="w-8 h-8 text-[#fa744c]" />
@@ -374,22 +375,23 @@ export default function SearchResults({ results, loading, query, onClearResults 
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-start gap-4 flex-1">
-                <div className="w-12 h-12 bg-[#fa744c] bg-opacity-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-12 h-12 bg-white border border-[#fa744c]/20 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
                   {result.metadata.logoUrl ? (
                     <>
-                      <img 
-                        src={result.metadata.logoUrl} 
+                      <img
+                        src={result.metadata.logoUrl}
                         alt={`${result.metadata.name} logo`}
-                        className="w-full h-full object-cover rounded-lg"
+                        className="max-w-full max-h-full object-contain block"
                         onError={(e) => {
-                          // Fallback to icon if image fails to load
                           const img = e.currentTarget;
-                          const iconElement = img.nextElementSibling as HTMLElement;
+                          const fallback = img.nextElementSibling as HTMLElement;
                           img.style.display = 'none';
-                          if (iconElement) iconElement.style.display = 'flex';
+                          if (fallback) fallback.style.display = 'flex';
                         }}
                       />
-                      <Building className="w-6 h-6 text-[#fa744c] hidden" />
+                      <div className="hidden w-full h-full items-center justify-center">
+                        <Building className="w-6 h-6 text-[#fa744c]" />
+                      </div>
                     </>
                   ) : (
                     <Building className="w-6 h-6 text-[#fa744c]" />
