@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes";
 import companyRoutes from "./routes/compnies.routes";
 import clientRoutes from "./routes/clients.routes";
 import embeddingRoutes from "./routes/embedding.routes";
+import interestsRoutes from "./routes/interests.routes";
 import { db } from "./db";
 
 dotenv.config();
@@ -22,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/companies", companyRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/embeddings", embeddingRoutes);
+app.use("/api/interests", interestsRoutes);
 
 app.listen(PORT, async () => {
   try {

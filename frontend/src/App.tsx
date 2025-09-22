@@ -7,6 +7,9 @@ import ResetPasswordPage from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
 import CreateCompany from "./pages/CreateCompany";
 import CompanyDashboard from "./pages/CompanyDashboard";
+import JobBrowsing from "./components/JobBrowsing";
+import InterestNotifications from "./components/InterestNotifications";
+import ClientDashboard from "./pages/ClientDashboard";
 import { type ReactNode, useEffect } from "react";
 import Dashboard from "./pages/Dashboard";
 import { Toaster } from "react-hot-toast";
@@ -83,6 +86,44 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <CompanyDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/test/job-browsing"
+          element={
+            <ProtectedRoute>
+              <div className="container mx-auto px-8 py-8">
+                <JobBrowsing />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/test/notifications"
+          element={
+            <ProtectedRoute>
+              <div className="container mx-auto px-8 py-8">
+                <InterestNotifications />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client/dashboard"
+          element={
+            <ProtectedRoute>
+              <ClientDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/test/client-dashboard"
+          element={
+            <ProtectedRoute>
+              <div className="container mx-auto px-8 py-8">
+                <ClientDashboard />
+              </div>
             </ProtectedRoute>
           }
         />

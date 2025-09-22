@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {  Plus, User } from "lucide-react";
+import {  Plus, User, FileText, Search, Bell, Building2 } from "lucide-react";
 import { useClientStore } from "../store/clients.store";
 import { useAuthStore } from "../store/auth.store";
 import { toast } from "react-hot-toast";
@@ -8,6 +8,8 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { TextCarousel, type TextSlide } from "../components/TextCarousel";
 import SearchInput from "../components/SearchInput";
 import SearchResults from "../components/SearchResults";
+import JobPosting from "../components/JobPosting";
+import InterestNotifications from "../components/InterestNotifications";
 
 export default function ClientDashboard() {
   const { user } = useAuthStore();
@@ -21,8 +23,7 @@ export default function ClientDashboard() {
     searchCompanies,
     clearSearchResults
   } = useClientStore();
-  const [requestInput, setRequestInput] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'project' | 'notifications'>('dashboard');
   const [searchQuery, setSearchQuery] = useState("");
 
   // Define carousel slides
@@ -52,12 +53,6 @@ export default function ClientDashboard() {
   useEffect(() => {
     getMyClient();
   }, [getMyClient]);
-
-  useEffect(() => {
-    if (client && client.description) {
-      setRequestInput(client.description);
-    }
-  }, [client]);
 
   // const handleSaveRequest = async () => {
   //   if (!client) return;
@@ -133,108 +128,168 @@ export default function ClientDashboard() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      {/* How It Works Carousel */}
+    <div className="max-w-6xl mx-auto">
+      {/* Tab Navigation */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        className="bg-white rounded-2xl shadow-xl p-6 mb-8"
       >
-        <TextCarousel 
-          slides={carouselSlides}
-          autoPlay={true}
-          autoPlayInterval={5000}
-          showDots={true}
-          showArrows={true}
-          className="w-full"
-        />
-      </motion.div>
-
-      {/* Client Info Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-white rounded-2xl shadow-xl p-6"
-      >
-        <div className="flex items-center gap-4 mb-4">
-          {client.profilePicUrl ? (
-            <img
-              src={client.profilePicUrl}
-              alt="Profile"
-              className="w-16 h-16 rounded-full object-cover border-4 border-[#fa744c]"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-[#fa744c] bg-opacity-10 flex items-center justify-center">
-              <User className="w-8 h-8 text-[#fa744c]" />
-            </div>
-          )}
-          <div>
-            <h3 className="text-xl font-semibold text-[#2D2D2D]">{user?.name}</h3>
-            <p className="text-gray-600">{user?.email}</p>
-            {client.bio && (
-              <p className="text-sm text-gray-500 mt-1">{client.bio}</p>
-            )}
-          </div>
+        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'dashboard'
+                ? 'bg-[#fa744c] text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Search className="w-4 h-4" />
+            Find Companies
+          </button>
+          <button
+            onClick={() => setActiveTab('project')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'project'
+                ? 'bg-[#fa744c] text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            My Project
+          </button>
+          <button
+            onClick={() => setActiveTab('notifications')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'notifications'
+                ? 'bg-[#fa744c] text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Bell className="w-4 h-4" />
+            Notifications
+          </button>
         </div>
       </motion.div>
 
-      {/* Request Management Section */}
-      
-        
-
-
-        {/* Help Text */}
-        {!client.description && !isEditing && (
+      {/* Tab Content */}
+      {activeTab === 'dashboard' && (
+        <div className="space-y-8">
+          {/* How It Works Carousel */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
           >
-            <div className="flex items-start gap-3">
-              <Plus className="w-5 h-5 text-blue-600 mt-0.5" />
+            <TextCarousel 
+              slides={carouselSlides}
+              autoPlay={true}
+              autoPlayInterval={5000}
+              showDots={true}
+              showArrows={true}
+              className="w-full"
+            />
+          </motion.div>
+
+          {/* Client Info Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-xl p-6"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              {client?.profilePicUrl ? (
+                <img
+                  src={client.profilePicUrl}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover border-4 border-[#fa744c]"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-[#fa744c] bg-opacity-10 flex items-center justify-center">
+                  <User className="w-8 h-8 text-[#fa744c]" />
+                </div>
+              )}
               <div>
-                <h4 className="font-medium text-blue-900 mb-1">Add Your First Request</h4>
-                <p className="text-blue-700 text-sm">
-                  Describe your project needs in detail. This will help service providers understand your requirements and provide better matches.
-                </p>
+                <h3 className="text-xl font-semibold text-[#2D2D2D]">{user?.name}</h3>
+                <p className="text-gray-600">{user?.email}</p>
+                {client?.bio && (
+                  <p className="text-sm text-gray-500 mt-1">{client.bio}</p>
+                )}
               </div>
             </div>
           </motion.div>
-        )}
 
-        {error && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
-      
+          {/* Company Search Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-6"
+          >
+            <SearchInput
+              onSearch={handleSearch}
+              loading={searchLoading}
+              placeholder="Search for companies based on your project needs..."
+              hasResults={searchResults.length > 0}
+              onClear={handleClearSearch}
+            />
 
-      {/* Company Search Section */}
-      {client.description && (
+            {searchResults.length > 0 && (
+              <SearchResults
+                results={searchResults}
+                loading={searchLoading}
+                query={searchQuery}
+                onClearResults={handleClearSearch}
+              />
+            )}
+          </motion.div>
+
+          {/* Encourage Project Creation */}
+          {!client?.description && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-blue-50 rounded-2xl p-6 border border-blue-200"
+            >
+              <div className="flex items-start gap-3">
+                <FileText className="w-6 h-6 text-blue-600 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-blue-900 mb-2">Ready to Get Started?</h4>
+                  <p className="text-blue-700 mb-4">
+                    Create your project description to help companies understand your needs and receive targeted proposals.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('project')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  >
+                    Create Project
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'project' && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="space-y-6"
+          transition={{ duration: 0.5 }}
         >
-          <SearchInput
-            onSearch={handleSearch}
-            loading={searchLoading}
-            placeholder="Search for companies based on your project needs..."
-            hasResults={searchResults.length > 0}
-            onClear={handleClearSearch}
-          />
+          <JobPosting />
+        </motion.div>
+      )}
 
-          {searchResults.length > 0 && (
-            <SearchResults
-              results={searchResults}
-              loading={searchLoading}
-              query={searchQuery}
-              onClearResults={handleClearSearch}
-            />
-          )}
+      {activeTab === 'notifications' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <InterestNotifications />
         </motion.div>
       )}
     </div>
