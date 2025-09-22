@@ -19,7 +19,7 @@ export default function InterestNotifications() {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const [updatingStatus, setUpdatingStatus] = useState<Set<number>>(new Set());
+  const [updatingStatus, setUpdatingStatus] = useState<Set<string>>(new Set());
 
   const fetchInterests = async () => {
     try {
@@ -45,7 +45,7 @@ export default function InterestNotifications() {
     toast.success("Notifications refreshed!");
   };
 
-  const handleMarkAsRead = async (interestId: number) => {
+  const handleMarkAsRead = async (interestId: string) => {
     try {
       await jobBrowsingService.markAsRead(interestId);
       setInterests(prev => 
@@ -62,7 +62,7 @@ export default function InterestNotifications() {
     }
   };
 
-  const handleStatusUpdate = async (interestId: number, status: 'accepted' | 'rejected') => {
+  const handleStatusUpdate = async (interestId: string, status: 'accepted' | 'rejected') => {
     setUpdatingStatus(prev => new Set(prev).add(interestId));
     
     try {
@@ -185,7 +185,7 @@ export default function InterestNotifications() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-xl font-semibold text-[#2D2D2D]">
-                        {interest.company?.companyName || 'Company'}
+                        {interest.company?.name || 'Company'}
                       </h3>
                       {!interest.isRead && (
                         <span className="bg-[#fa744c] text-white px-2 py-1 rounded-full text-xs font-medium">

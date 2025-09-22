@@ -36,7 +36,7 @@ export default function JobBrowsing() {
       
       // Mark which clients we've already expressed interest in
       const interestedClientIds = new Set(
-        myInterests.map(interest => interest.clientId.toString())
+        myInterests.map(interest => interest.clientId)
       );
       setExpressedInterests(interestedClientIds);
     } catch (error) {

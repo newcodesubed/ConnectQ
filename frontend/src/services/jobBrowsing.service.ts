@@ -20,16 +20,16 @@ export interface ClientRequest {
 }
 
 export interface Interest {
-  id: number;
-  clientId: number;
-  companyId: number;
+  id: string;
+  clientId: string;
+  companyId: string;
   status: 'pending' | 'accepted' | 'rejected';
   message?: string;
   isRead: boolean;
   createdAt: string;
   updatedAt: string;
   client?: {
-    id: number;
+    id: string;
     firstName: string;
     lastName: string;
     user?: {
@@ -38,8 +38,12 @@ export interface Interest {
     };
   };
   company?: {
-    id: number;
-    companyName: string;
+    id: string;
+    name: string;
+    email: string;
+    logoUrl?: string;
+    industry?: string;
+    location?: string;
     user?: {
       name: string;
       email: string;
@@ -74,7 +78,7 @@ export const jobBrowsingService = {
       const response = await axios.post(`${API_URL}/interests/express/${clientId}`, {
         message
       });
-      return response.data.data;
+      return response.data.interest;
     } catch (error) {
       console.error('Error expressing interest:', error);
       throw error;
@@ -85,7 +89,7 @@ export const jobBrowsingService = {
   async getMyInterests(): Promise<Interest[]> {
     try {
       const response = await axios.get(`${API_URL}/interests/my`);
-      return response.data.data || [];
+      return response.data.interests || [];
     } catch (error) {
       console.error('Error fetching my interests:', error);
       throw error;
@@ -96,7 +100,7 @@ export const jobBrowsingService = {
   async getReceivedInterests(): Promise<Interest[]> {
     try {
       const response = await axios.get(`${API_URL}/interests/received`);
-      return response.data.data || [];
+      return response.data.interests || [];
     } catch (error) {
       console.error('Error fetching received interests:', error);
       throw error;
@@ -107,7 +111,7 @@ export const jobBrowsingService = {
   async getUnreadCount(): Promise<number> {
     try {
       const response = await axios.get(`${API_URL}/interests/unread-count`);
-      return response.data.data || 0;
+      return response.data.unreadCount || 0;
     } catch (error) {
       console.error('Error fetching unread count:', error);
       return 0;
@@ -115,7 +119,7 @@ export const jobBrowsingService = {
   },
 
   // Mark interest as read (client-only)
-  async markAsRead(interestId: number): Promise<void> {
+  async markAsRead(interestId: string): Promise<void> {
     try {
       await axios.patch(`${API_URL}/interests/${interestId}/read`);
     } catch (error) {
@@ -125,12 +129,12 @@ export const jobBrowsingService = {
   },
 
   // Update interest status (client-only)
-  async updateInterestStatus(interestId: number, status: 'accepted' | 'rejected'): Promise<Interest> {
+  async updateInterestStatus(interestId: string, status: 'accepted' | 'rejected'): Promise<Interest> {
     try {
       const response = await axios.patch(`${API_URL}/interests/${interestId}/status`, {
         status
       });
-      return response.data.data;
+      return response.data.interest;
     } catch (error) {
       console.error('Error updating interest status:', error);
       throw error;

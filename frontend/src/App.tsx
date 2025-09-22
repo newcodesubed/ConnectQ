@@ -10,6 +10,7 @@ import CompanyDashboard from "./pages/CompanyDashboard";
 import JobBrowsing from "./components/JobBrowsing";
 import InterestNotifications from "./components/InterestNotifications";
 import ClientDashboard from "./pages/ClientDashboard";
+import NotificationTestComponent from "./components/NotificationTestComponent";
 import { type ReactNode, useEffect } from "react";
 import Dashboard from "./pages/Dashboard";
 import { Toaster } from "react-hot-toast";
@@ -123,6 +124,16 @@ const App: React.FC = () => {
             <ProtectedRoute>
               <div className="container mx-auto px-8 py-8">
                 <ClientDashboard />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/test/notification-debug"
+          element={
+            <ProtectedRoute>
+              <div className="container mx-auto px-8 py-8">
+                <NotificationTestComponent />
               </div>
             </ProtectedRoute>
           }
