@@ -60,10 +60,35 @@ export class InterestRepository {
   }
 
   // Get all interests by a specific company
-  static async findByCompanyId(companyId: string): Promise<Interest[]> {
+  static async findByCompanyId(companyId: string): Promise<Array<Interest & { client: any; user: any }>> {
     return await db
-      .select()
+      .select({
+        id: interests.id,
+        clientId: interests.clientId,
+        companyId: interests.companyId,
+        message: interests.message,
+        status: interests.status,
+        isRead: interests.isRead,
+        createdAt: interests.createdAt,
+        updatedAt: interests.updatedAt,
+        client: {
+          id: clients.id,
+          name: clients.name,
+          email: clients.email,
+          description: clients.description,
+          profilePicUrl: clients.profilePicUrl,
+          imageUrl: clients.imageUrl,
+          contactNumber: clients.contactNumber,
+          bio: clients.bio,
+        },
+        user: {
+          name: users.name,
+          email: users.email,
+        }
+      })
       .from(interests)
+      .innerJoin(clients, eq(interests.clientId, clients.id))
+      .innerJoin(users, eq(clients.userId, users.id))
       .where(eq(interests.companyId, companyId))
       .orderBy(desc(interests.createdAt));
   }

@@ -13,17 +13,19 @@ import {
   Twitter,
   ExternalLink,
   Building2,
-  Search
+  Search,
+  Heart
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCompanyStore } from "../store/companies.store";
 import LoadingSpinner from "../components/LoadingSpinner";
 import JobBrowsing from "../components/JobBrowsing";
+import CompanyInterestTracker from "../components/CompanyInterestTracker";
 
 function CompanyDashboard() {
   const { company, loading, error, getMyCompany } = useCompanyStore();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'profile' | 'jobs'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'jobs' | 'interests'>('profile');
 
   useEffect(() => {
     getMyCompany();
@@ -86,6 +88,17 @@ function CompanyDashboard() {
           >
             <Search className="w-4 h-4" />
             Browse Projects
+          </button>
+          <button
+            onClick={() => setActiveTab('interests')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'interests'
+                ? 'bg-[#fa744c] text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Heart className="w-4 h-4" />
+            My Interests
           </button>
         </div>
       </motion.div>
@@ -311,6 +324,17 @@ function CompanyDashboard() {
           transition={{ duration: 0.5 }}
         >
           <JobBrowsing />
+        </motion.div>
+      )}
+
+      {activeTab === 'interests' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl shadow-xl p-6"
+        >
+          <CompanyInterestTracker />
         </motion.div>
       )}
     </div>

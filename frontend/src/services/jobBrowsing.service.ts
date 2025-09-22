@@ -30,12 +30,13 @@ export interface Interest {
   updatedAt: string;
   client?: {
     id: string;
-    firstName: string;
-    lastName: string;
-    user?: {
-      name: string;
-      email: string;
-    };
+    name: string;
+    email: string;
+    description?: string;
+    profilePicUrl?: string;
+    imageUrl?: string;
+    contactNumber?: string;
+    bio?: string;
   };
   company?: {
     id: string;
@@ -48,6 +49,10 @@ export interface Interest {
       name: string;
       email: string;
     };
+  };
+  user?: {
+    name: string;
+    email: string;
   };
 }
 

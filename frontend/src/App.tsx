@@ -139,6 +139,16 @@ const App: React.FC = () => {
           }
         />
         <Route
+          path="/test/notification-debug"
+          element={
+            <ProtectedRoute>
+              <div className="container mx-auto px-8 py-8">
+                <NotificationTestComponent />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/login"
           element={
             <RedirectAuthenticated>

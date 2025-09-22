@@ -10,6 +10,7 @@ import SearchInput from "../components/SearchInput";
 import SearchResults from "../components/SearchResults";
 import JobPosting from "../components/JobPosting";
 import InterestNotifications from "../components/InterestNotifications";
+import { useNotificationCount } from "../hooks/useNotificationCount";
 
 export default function ClientDashboard() {
   const { user } = useAuthStore();
@@ -25,6 +26,7 @@ export default function ClientDashboard() {
   } = useClientStore();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'project' | 'notifications'>('dashboard');
   const [searchQuery, setSearchQuery] = useState("");
+  const { unreadCount } = useNotificationCount();
 
   // Define carousel slides
   const carouselSlides: TextSlide[] = [
@@ -160,7 +162,7 @@ export default function ClientDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('notifications')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors relative ${
               activeTab === 'notifications'
                 ? 'bg-[#fa744c] text-white'
                 : 'text-gray-600 hover:text-gray-900'
@@ -168,6 +170,11 @@ export default function ClientDashboard() {
           >
             <Bell className="w-4 h-4" />
             Notifications
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </button>
         </div>
       </motion.div>
