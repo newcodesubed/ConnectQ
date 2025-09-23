@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, useEffect, useRef, useCallback, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { Loader } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 function EmailVerificationPage() {
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
+  const [isVerified, setIsVerified] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
   const { verifyEmail, error, loading } = useAuthStore();
@@ -44,12 +45,14 @@ function EmailVerificationPage() {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const verificationCode = code.join('');
+  const performVerification = useCallback(async (verificationCode: string) => {
     try {
+      setIsVerified(true); // Set immediately to prevent double calls
       await verifyEmail(verificationCode);
-      if (!error) {
+      
+      // Check the auth store state directly after verification
+      const authStore = useAuthStore.getState();
+      if (!authStore.error) {
         toast.success("Email verified successfully", {
           duration: 2000,
           position: 'top-center',
@@ -58,32 +61,35 @@ function EmailVerificationPage() {
         setTimeout(() => {
           navigate("/dashboard");
         }, 1500);
+      } else {
+        setIsVerified(false); // Reset if there was an error
       }
     } catch (error) {
       console.log(error);
+      setIsVerified(false); // Reset if there was an error
     }
+  }, [verifyEmail, navigate]);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (isVerified || loading) return; // Prevent multiple submissions
+    
+    const verificationCode = code.join('');
+    await performVerification(verificationCode);
   };
 
   // Auto submit when all fields are filled
   useEffect(() => {
-    if (code.every((digit) => digit !== "")) {
+    if (code.every((digit) => digit !== "") && !isVerified && !loading) {
       const verificationCode = code.join('');
-      verifyEmail(verificationCode).then(() => {
-        if (!error) {
-          toast.success("Email verified successfully", {
-            duration: 2000,
-            position: 'top-center',
-          });
-          // Small delay to show the toast before navigation
-          setTimeout(() => {
-            navigate("/dashboard");
-          }, 1500);
-        }
-      }).catch((error) => {
-        console.log(error);
-      });
+      // Use a small delay to prevent race conditions
+      const timer = setTimeout(() => {
+        performVerification(verificationCode);
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
-  }, [code, verifyEmail, error, navigate]);
+  }, [code, isVerified, loading, performVerification]);
 
   return (
     <div className="min-h-screen bg-[#F2F2F2] flex items-center justify-center p-6">
