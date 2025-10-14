@@ -56,6 +56,13 @@ export default function ClientDashboard() {
     getMyClient();
   }, [getMyClient]);
 
+  // Handle search results toast notification
+  useEffect(() => {
+    if (searchQuery && !searchLoading && searchResults.length > 0) {
+      toast.success(`Found ${searchResults.length} companies matching your requirements!`);
+    }
+  }, [searchResults, searchLoading, searchQuery]);
+
   // const handleSaveRequest = async () => {
   //   if (!client) return;
     
@@ -83,7 +90,7 @@ export default function ClientDashboard() {
     setSearchQuery(query);
     try {
       await searchCompanies(query);
-      toast.success(`Found ${searchResults.length} companies matching your requirements!`);
+      // Toast will be handled in useEffect based on search results update
     } catch (err) {
       console.error("Search error:", err);
       toast.error("Failed to search companies. Please try again.");
