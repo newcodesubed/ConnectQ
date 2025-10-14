@@ -178,11 +178,13 @@ export default function InterestNotifications() {
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
                     {interest.company?.logoUrl ? (
-                      <img
-                        src={interest.company.logoUrl}
-                        alt={`${interest.company.name} logo`}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-[#fa744c]"
-                      />
+                      <div className="w-12 h-12 rounded-full border-2 border-[#fa744c] bg-white flex items-center justify-center p-1 overflow-hidden">
+                        <img
+                          src={interest.company.logoUrl}
+                          alt={`${interest.company.name} logo`}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-[#fa744c] bg-opacity-10 flex items-center justify-center">
                         <Building2 className="w-6 h-6 text-[#fa744c]" />
