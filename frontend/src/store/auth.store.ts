@@ -24,6 +24,8 @@ interface AuthState {
   message: string | null;
 
   setRoleChoice: (role: Role) => void;
+  clearRoleChoice: () => void;
+  loadRoleFromStorage: () => void;
   clearError: () => void;
 
   checkAuth: () => Promise<void>;
@@ -45,7 +47,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   message: null,
 
   // --- Actions ---
-  setRoleChoice: (role) => set({ roleChoice: role }),
+  setRoleChoice: (role) => {
+    localStorage.setItem('roleChoice', role);
+    set({ roleChoice: role });
+  },
+  
+  clearRoleChoice: () => {
+    localStorage.removeItem('roleChoice');
+    set({ roleChoice: null });
+  },
+  
+  loadRoleFromStorage: () => {
+    const storedRole = localStorage.getItem('roleChoice') as Role | null;
+    if (storedRole === 'client' || storedRole === 'company') {
+      set({ roleChoice: storedRole });
+    }
+  },
+  
   clearError: () => set({ error: null }),
 
   checkAuth: async () => {
@@ -112,7 +130,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await axios.post(`${API_URL}/logout`);
-      set({ user: null, isAuthenticated: false });
+      // Clear role choice on logout
+      localStorage.removeItem('roleChoice');
+      set({ user: null, isAuthenticated: false, roleChoice: null });
     } catch {
       set({ error: "Logout failed" });
     } finally {

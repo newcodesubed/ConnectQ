@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/auth.store";
 import { useNavigate } from "react-router-dom";
 
 export default function RoleSelect() {
-  const { setRoleChoice } = useAuthStore();
+  const { setRoleChoice, roleChoice, loadRoleFromStorage } = useAuthStore();
   const navigate = useNavigate();
   const [selectedType, setSelectedType] = useState<"client" | "company" | null>(null);
+
+  // Load stored role on component mount
+  useEffect(() => {
+    loadRoleFromStorage();
+    if (roleChoice) {
+      setSelectedType(roleChoice);
+    }
+  }, [roleChoice, loadRoleFromStorage]);
 
   const handleCreateAccount = () => {
     if (selectedType) {
@@ -37,9 +45,18 @@ export default function RoleSelect() {
       <main className="flex-1 flex items-start justify-center px-4 pt-16 pb-8">
         <div className="w-full max-w-5xl mx-auto">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-light text-[#2D2D2D] mb-16 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-light text-[#2D2D2D] mb-4 leading-tight">
               Join as a client or company
             </h1>
+            {roleChoice && (
+              <div className="mb-12 p-3 bg-blue-50 border border-blue-200 rounded-lg max-w-sm mx-auto">
+                <p className="text-sm text-blue-800">
+                  Previously selected: <span className="font-medium">{roleChoice === 'company' ? 'Company' : 'Client'}</span>
+                </p>
+                <p className="text-xs text-blue-600 mt-1">You can change your selection below</p>
+              </div>
+            )}
+            {!roleChoice && <div className="mb-16" />}
 
             {/* Selection Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-12">

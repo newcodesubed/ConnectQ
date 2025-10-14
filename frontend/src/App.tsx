@@ -45,6 +45,27 @@ const RedirectAuthenticated: React.FC<RedirectAuthenticatedProps> = ({ children 
   return isAuthenticated && user?.isVerified ? <Navigate to="/dashboard" replace /> : <>{children}</>;
 };
 
+// --- ProtectedSignup Component ---
+interface ProtectedSignupProps {
+  children: ReactNode;
+}
+
+const ProtectedSignup: React.FC<ProtectedSignupProps> = ({ children }) => {
+  const { roleChoice, loadRoleFromStorage } = useAuthStore();
+
+  useEffect(() => {
+    loadRoleFromStorage();
+  }, [loadRoleFromStorage]);
+
+  // Check if role is selected
+  const storedRole = localStorage.getItem('roleChoice');
+  if (!roleChoice && !storedRole) {
+    return <Navigate to="/role-select" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 
 const App: React.FC = () => {
   const { loading: isCheckingAuth, checkAuth } = useAuthStore();
@@ -64,8 +85,8 @@ const App: React.FC = () => {
       <div className="container mx-auto px-8">
 
       <Routes>
-        <Route path="/" element={<Navigate to="/role" replace />} />
-       <Route path="/role" element={<RoleSelect />} />
+        <Route path="/" element={<Navigate to="/role-select" replace />} />
+       <Route path="/role-select" element={<RoleSelect />} />
         <Route
           path="/dashboard"
           element={
@@ -160,7 +181,9 @@ const App: React.FC = () => {
           path="/signup"
           element={
             <RedirectAuthenticated>
-              <SignUpPage />
+              <ProtectedSignup>
+                <SignUpPage />
+              </ProtectedSignup>
             </RedirectAuthenticated>
           }
           />
